@@ -1,0 +1,56 @@
+
+Rozumiem, że problem występuje tylko podczas zapisu do PDF, więc możemy spróbować dostosować styl CSS, aby zoptymalizować wygląd tabeli w pliku PDF. Oto kilka sugerowanych zmian:
+
+css
+Copy code
+    /* Resetowanie marginesów i paddingu dla całej tabeli */
+table {
+    margin: 0;
+    padding: 0;
+}
+
+/* Zmniejszenie odstępów między komórkami */
+table,
+th,
+td {
+    border-collapse: collapse;
+    border: 1px solid black; /* Dodanie obramowania */
+    padding: 5px; /* Dostosuj padding według preferencji */
+}
+
+/* Ustawienie szerokości dla nagłówka tabeli */
+thead th {
+    width: auto; /* Możesz dostosować szerokość według potrzeb */
+}
+
+/* Stylizacja caption */
+caption {
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px; /* Dostosuj margines według preferencji */
+}
+
+/* Dodanie odstępu między wierszami */
+tr {
+    line-height: 1.5;
+}
+
+/* Dodanie tła i koloru tekstu dla komórek z treścią */
+td {
+    background-color: #fff; /* Dostosuj kolor tła według preferencji */
+    color: #000; /* Dostosuj kolor tekstu według preferencji */
+}
+
+/* Stylizacja komórek z nagłówkiem */
+th {
+    background-color: #f0f0f0; /* Dostosuj kolor tła według preferencji */
+    color: #000; /* Dostosuj kolor tekstu według preferencji */
+}
+
+/* Dostosowanie stylu dla komórek z dużymi wartościami */
+.wss-nb {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px; /* Dostosuj maksymalną szerokość według preferencji */
+}

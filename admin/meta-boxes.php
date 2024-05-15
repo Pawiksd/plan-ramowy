@@ -3,7 +3,7 @@
 add_action('save_post', 'save_congress_presentation_meta_data');
 add_action('add_meta_boxes', 'add_congress_presentation_meta_boxes');
 //add_filter('theme_page_templates', 'register_custom_page_templates');
-add_filter('template_include', 'load_custom_template');
+//add_filter('template_include', 'load_custom_template');
 
 function save_congress_presentation_meta_data($post_id)
 {
