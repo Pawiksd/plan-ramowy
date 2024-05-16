@@ -1,65 +1,57 @@
-#plan-ramowy{width:100%;border-collapse: separate;border-spacing: 10px;}
-#plan-ramowy tr{}
-#plan-ramowy th, #plan-ramowy td {
-    padding: 0;
-    text-align: center;
+#plan-ramowy {
+    display: grid;
+    grid-template-columns: 100px repeat(8, 1fr); /* First column for timeslots, others for scenes */
+    grid-auto-rows: minmax(30px, auto); /* Adjust the row height as needed */
+    gap: 10px;
+    padding: 20px;
 }
-#plan-ramowy th{width: 10%}
-#plan-ramowy th#pr-godzina{
-    min-width: 95px;
-}
-#plan-ramowy td{text-align: center;}
 
-#plan-ramowy td > div {
-    height: 100%;
-    width: 100%;
+#plan-ramowy .day-title {
+    grid-column: 1 / -1;
+    text-align: center;
+    margin: 10px 0;
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+#plan-ramowy .scene-name {
+    text-align: center;
+    font-weight: bold;
+    padding: 5px;
+    background: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+#plan-ramowy .timeslot {
+    grid-column: 1;
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+#plan-ramowy .scene {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 8px;
-    box-sizing: border-box;
+    padding: 5px;
 }
 
-#plan-ramowy td[colspan] > div {
-    padding: 16px;
-}
-
-#plan-ramowy th, #plan-ramowy td {
-    transition: all 0.3s ease;
-    height: 0;
-    transform-origin: center center;
-}
-
-#plan-ramowy td:hover, #plan-ramowy th:hover {
-    transform-origin: center center;
-    backface-visibility: hidden;
-    transform: scale(1.05); /* Lekkie powiększenie elementów przy hover */
-}
-
-#plan-ramowy td[colspan]:hover > div, #plan-ramowy th:hover {
-
-}
-#plan-ramowy th {
-    background-color: #eeeeee;
-    border-radius: 8px;
+#plan-ramowy .event {
+    background: var(--bg-color);
+    color: var(--text-color);
+    border: 3px solid var(--border-color);
+    border-radius: 10px;
     padding: 10px;
-}
-#plan-ramowy th.wss-nb, #plan-ramowy td.wss-nb {background-color: transparent}
-
-.custom-tooltip {
-    position: absolute;
-    background-color: black;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 4px;
-    z-index: 1000;
-    white-space: nowrap;
-    box-shadow: 0px 0px 10px rgba(0,0,0,0.5);
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out; /* Animacja przejścia */
-    pointer-events: none;
-}
-
-footer.wp-block-template-part{
-    overflow-x: hidden;
+    margin: 5px;
+    text-align: center;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
 }

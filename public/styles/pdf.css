@@ -1,9 +1,4 @@
-
-Rozumiem, że problem występuje tylko podczas zapisu do PDF, więc możemy spróbować dostosować styl CSS, aby zoptymalizować wygląd tabeli w pliku PDF. Oto kilka sugerowanych zmian:
-
-css
-Copy code
-    /* Resetowanie marginesów i paddingu dla całej tabeli */
+/* Resetowanie marginesów i paddingu dla całej tabeli */
 table {
     margin: 0;
     padding: 0;
@@ -45,12 +40,4 @@ td {
 th {
     background-color: #f0f0f0; /* Dostosuj kolor tła według preferencji */
     color: #000; /* Dostosuj kolor tekstu według preferencji */
-}
-
-/* Dostosowanie stylu dla komórek z dużymi wartościami */
-.wss-nb {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100px; /* Dostosuj maksymalną szerokość według preferencji */
 }

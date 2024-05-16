@@ -69,8 +69,54 @@ function register_congress_custom_post_types()
 
 add_action('init', 'register_congress_custom_post_types');
 
+function conference_schedule_shortcode2() {
+    ob_start();
+    ?>
+    <div class="schedule-container">
+        <div class="event colspan-2 rowspan-1" data-tooltip="Dodatkowy opis który może być dodany jako treść prezentacji w backend.">
+            Otwarcie Kongresu
+        </div>
+        <div class="event" style="grid-column: 1 / span 1; grid-row: 2 / span 1; background-color: #f94144;">
+            CZUŁA TERYTORIALIZACJA
+        </div>
+        <div class="event" style="grid-column: 1 / span 1; grid-row: 3 / span 1; background-color: #f94144;">
+            Krajowa Polityka Miejska 2030
+        </div>
+        <div class="event" style="grid-column: 3 / span 1; grid-row: 3 / span 1; background-color: #90be6d;">
+            Rola i kondycja miast subregionalnych
+        </div>
+        <div class="event" style="grid-column: 4 / span 1; grid-row: 3 / span 1; background-color: #277da1;">
+            Uroki życia w małym miasteczku
+        </div>
+        <div class="event" style="grid-column: 1 / span 1; grid-row: 5 / span 1; background-color: #f94144;">
+            Polska dwóch prędkości?
+        </div>
+        <div class="event" style="grid-column: 2 / span 1; grid-row: 5 / span 1; background-color: #f94144;">
+            Ustawa o rozwoju miast
+        </div>
+        <div class="event" style="grid-column: 3 / span 1; grid-row: 5 / span 1; background-color: #f94144;">
+            Kryzys mieszkaniowy w metropoliach szansą dla mniejszych miast?
+        </div>
+        <div class="event" style="grid-column: 4 / span 1; grid-row: 5 / span 1; background-color: #f94144;">
+            Minimalny standard usług
+        </div>
+        <div class="event" style="grid-column: 1 / span 1; grid-row: 6 / span 1; background-color: #f94144;">
+            Integracja zarządzania obszarami funkcjonalnymi dużych miast
+        </div>
+        <div class="event" style="grid-column: 3 / span 1; grid-row: 6 / span 1; background-color: #f94144;">
+            Ustawa o rozwoju miast
+        </div>
+        <div class="event" style="grid-column: 4 / span 1; grid-row: 6 / span 1; background-color: #f94144;">
+            Puste miasteczka
+        </div>
+        <!-- Add other events here -->
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
 // Register the shortcode
-function conference_schedule_shortcode()
+function conference_schedule_shortcode1()
 {
     // Time slots array
     $timeslots = [
@@ -119,7 +165,7 @@ function conference_schedule_shortcode()
                     $border_color = get_post_meta($prezentacja->ID, 'border_color', true);
                     $text_color = get_post_meta($prezentacja->ID, 'text_color', true);
                     $style = 'style="background-color:' . esc_attr($bg_color) . ';color:' . esc_attr($text_color) . '; border-radius: 10px; border: 3px solid ' . esc_attr($border_color) . ';"';
-                    $output .= '<td scope="cell" class="wss-nb" colspan="' . $colspan . '" rowspan="' . $rowspan . '" data-tooltip="' . esc_attr(wp_strip_all_tags(get_post_field('post_content', $prezentacja->ID))) . '"><div ' . $style . '>' . get_the_title($prezentacja->ID) . '</div></td>';
+                    $output .= '<td scope="cell" class="wss-nb" colspan="' . $colspan . '" rowspan="' . $rowspan . '" data-tooltip="' . esc_attr(wp_strip_all_tags(get_post_field('post_content', $prezentacja->ID))) . '"><div ' . $style . ' class="event">' . get_the_title($prezentacja->ID) . '</div></td>';
                     
                     // Set active state for the presentation
                     for ($i = $timeslotIndex; $i < $timeslotIndex + $rowspan; $i++) {
@@ -137,6 +183,75 @@ function conference_schedule_shortcode()
     }
     $output .= '</table>';
     
+    
+    // Return the HTML output
+    return $output;
+}
+
+
+
+function conference_schedule_shortcode() {
+    // Time slots array
+    $timeslots = [
+        '9:30 - 10:00', '10:00 - 10:30', '10:30 - 11:00', '11:00 - 11:30', '11:30 - 12:00',
+        '12:00 - 12:30', '12:30 - 13:00', '13:00 - 13:30', '13:30 - 14:00', '14:00 - 14:30',
+        '14:30 - 15:00', '15:00 - 15:30', '15:30 - 16:00', '16:00 - 16:30', '16:30 - 17:00',
+        '17:00 - 17:30', '17:30 - 18:00', '18:00 - 18:30', '18:30 - 19:00', '19:00 - 23:00'
+    ];
+    
+    // Retrieve post data
+    $sceny = get_posts(['post_type' => 'kongres_scena', 'numberposts' => -1, 'orderby' => 'ID', 'order' => 'ASC']);
+    $dni = get_posts(['post_type' => 'kongres_dzien', 'numberposts' => -1, 'orderby' => 'ID', 'order' => 'ASC']);
+    
+    $activePresentations = [];
+    
+    $output = '<div id="plan-ramowy">';
+    
+    foreach ($dni as $dzien) {
+        $output .= '<div class="day-title"><strong>Dzień: ' . get_the_title($dzien->ID) . '</strong></div>';
+        
+        // Scene names
+        $output .= '<div class="timeslot"></div>'; // Empty cell for the timeslot header
+        foreach ($sceny as $scena) {
+            $output .= '<div class="scene-name">' . esc_html(get_the_title($scena->ID)) . '</div>';
+        }
+        
+        // Loop through each timeslot and scene to generate the presentation cells
+        foreach ($timeslots as $timeslotIndex => $timeslot) {
+            $output .= '<div class="timeslot">' . $timeslot . '</div>';
+            
+            foreach ($sceny as $scenaIndex => $scena) {
+                $scena_id = $scena->ID;
+                
+                // Check for active presentations
+                if (!empty($activePresentations[$scena_id][$timeslotIndex])) {
+                    continue; // Skip if the presentation is active
+                }
+                
+                $prezentacja = znajdzPrezentacje($dzien->ID, $scena_id, $timeslot);
+                if ($prezentacja) {
+                    $colspan = obliczColspan($prezentacja);
+                    $rowspan = obliczRowspan($prezentacja);
+                    $bg_color = get_post_meta($prezentacja->ID, 'bg_color', true);
+                    $border_color = get_post_meta($prezentacja->ID, 'border_color', true);
+                    $text_color = get_post_meta($prezentacja->ID, 'text_color', true);
+                    
+                    $style = 'style="--bg-color:' . esc_attr($bg_color) . ';--text-color:' . esc_attr($text_color) . '; --border-color:' . esc_attr($border_color) . ';"';
+                    $output .= '<div class="scene event" ' . $style . ' data-tooltip="' . esc_attr(wp_strip_all_tags(get_post_field('post_content', $prezentacja->ID))) . '" style="grid-column: span ' . $colspan . '; grid-row: span ' . $rowspan . ';">' . get_the_title($prezentacja->ID) . '</div>';
+                    
+                    // Set active state for the presentation
+                    for ($i = $timeslotIndex; $i < $timeslotIndex + $rowspan; $i++) {
+                        for ($j = 0; $j < $colspan; $j++) {
+                            $activePresentations[$scena_id + $j][$i] = true;
+                        }
+                    }
+                } else {
+                    $output .= '<div class="scene"></div>';
+                }
+            }
+        }
+    }
+    $output .= '</div>';
     
     // Return the HTML output
     return $output;
@@ -297,30 +412,32 @@ function generate_plan_ramowy_pdf()
         'format' => 'A4',
         'margin_header' => 5,
         'margin_footer' => 5,
-        'orientation' => 'L'
+        'orientation' => 'P'
     ]);
     
     // Dodaj obrazy nagłówka i stopki jako HTML header & footer w PDF
     if ($header_image) {
-       $mpdf->SetHTMLHeader('<div style="text-align:center;"><img src="' . $header_image . '" width="100%"></div>');
+       //$mpdf->SetHTMLHeader('<div style="text-align:center;"><img src="' . $header_image . '" width="100%"></div>');
     }
     if ($footer_image) {
-       $mpdf->SetHTMLFooter('<div style="text-align:center;"><img src="' . $footer_image . '" width="100%"></div>');
+       //$mpdf->SetHTMLFooter('<div style="text-align:center;"><img src="' . $footer_image . '" width="100%"></div>');
     }
     
     // Dodanie CSS ze stylami z front endu
     $stylesheet = file_get_contents(get_template_directory_uri() . '/style.css'); // Upewnij się, że ta ścieżka jest prawidłowa
     $mpdf->WriteHTML($stylesheet, \Mpdf\HTMLParserMode::HEADER_CSS);
     
+    // Dodanie CSS ze stylami z pluginu
+    //$stylesheet2 = file_get_contents(plugin_dir_url(__FILE__) . '../public/styles/pdf.css'); // Upewnij się, że ta ścieżka jest prawidłowa
+    //$mpdf->WriteHTML($stylesheet2, \Mpdf\HTMLParserMode::HEADER_CSS);
     
     
     // Dodanie CSS ze stylami z pluginu
-    $stylesheet2 = file_get_contents(plugin_dir_path(__FILE__) . '/../public/styles/pdf.css'); // Upewnij się, że ta ścieżka jest prawidłowa
-    $mpdf->WriteHTML($stylesheet2, \Mpdf\HTMLParserMode::HEADER_CSS);
-    
-    // Dodanie CSS ze stylami z pluginu
-    $stylesheet1 = file_get_contents(plugin_dir_path(__FILE__) . '/../public/styles/styles.css'); // Upewnij się, że ta ścieżka jest prawidłowa
+    $stylesheet1 = file_get_contents(plugin_dir_url(__FILE__) . '../public/styles/style.css'); // Upewnij się, że ta ścieżka jest prawidłowa
     $mpdf->WriteHTML($stylesheet1, \Mpdf\HTMLParserMode::HEADER_CSS);
+    
+    
+
 
 
 // Pobierz treść HTML z shortcode'u
@@ -328,8 +445,8 @@ function generate_plan_ramowy_pdf()
 
 // Wykonaj shortcode w kontekście HTML
     $content_html_executed = apply_filters('the_content', $content_html);
-    
     $mpdf->WriteHTML($content_html_executed, \Mpdf\HTMLParserMode::HTML_BODY);
+    
     
     // Generowanie PDF
     $file_path = wp_upload_dir()['basedir'] . '/plan_ramowy.pdf'; // Ścieżka zapisu pliku PDF

@@ -21,4 +21,5 @@ function pr_enqueue_scripts() {
     wp_enqueue_script('pr-table', 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js', array(), null, true);
     //wp_enqueue_script('pr-jspdf', '//cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.3/jspdf.min.js', array(), null, true);
 }
+
 add_action('wp_enqueue_scripts', 'pr_enqueue_scripts');
