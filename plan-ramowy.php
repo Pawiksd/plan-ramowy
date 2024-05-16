@@ -6,11 +6,21 @@
  * Author: Paweł Juchim
  */
 
-// Hook do rejestracji typów postów i taksonomii
-include( plugin_dir_path( __FILE__ ) . 'includes/functions.php');
+// Define constants
+define('CONGRESS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 
-// Hook do dodawania meta boxów
-//include( plugin_dir_path( __FILE__ ) . 'admin/meta-boxes.php');
+// Include Custom Post Types
+include_once CONGRESS_PLUGIN_DIR . 'includes/cpt-congress-day.php';
+include_once CONGRESS_PLUGIN_DIR . 'includes/cpt-congress-scene.php';
+include_once CONGRESS_PLUGIN_DIR . 'includes/cpt-congress-presentation.php';
+include_once CONGRESS_PLUGIN_DIR . 'includes/cpt-speakers.php';
+
+// Include Meta Boxes
+include_once CONGRESS_PLUGIN_DIR . 'includes/meta-boxes.php';
+//include_once CONGRESS_PLUGIN_DIR . 'includes/option-page.php';
+// Include Shortcodes
+include_once CONGRESS_PLUGIN_DIR . 'includes/shortcodes.php';
+
 
 // Dodaj skrypty i style
 function pr_enqueue_scripts() {
