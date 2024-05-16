@@ -45,6 +45,7 @@
     padding: 10px;
 }
 #plan-ramowy th.wss-nb, #plan-ramowy td.wss-nb {background-color: transparent}
+#plan-ramowy th a,#plan-ramowy td a{text-decoration: none;}
 
 .custom-tooltip {
     position: absolute;
