@@ -10,7 +10,7 @@
 include( plugin_dir_path( __FILE__ ) . 'includes/functions.php');
 
 // Hook do dodawania meta boxów
-include( plugin_dir_path( __FILE__ ) . 'admin/meta-boxes.php');
+//include( plugin_dir_path( __FILE__ ) . 'admin/meta-boxes.php');
 
 // Dodaj skrypty i style
 function pr_enqueue_scripts() {
@@ -22,3 +22,10 @@ function pr_enqueue_scripts() {
     //wp_enqueue_script('pr-jspdf', '//cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.3/jspdf.min.js', array(), null, true);
 }
 add_action('wp_enqueue_scripts', 'pr_enqueue_scripts');
+
+function pr_load_custom_wp_admin_script() {
+    wp_enqueue_script('jquery-ui-sortable');
+    wp_enqueue_script('custom-admin-js', plugin_dir_url(__FILE__) . 'admin/scripts/admin.js', ['jquery', 'jquery-ui-sortable'], false, true);
+    wp_enqueue_style('custom-admin-css', plugin_dir_url(__FILE__) . 'admin/styles/admin.css', false, '1.0.0', 'all');
+}
+add_action('admin_enqueue_scripts', 'pr_load_custom_wp_admin_script');

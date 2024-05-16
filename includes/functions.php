@@ -59,26 +59,70 @@ function register_congress_custom_post_types()
         ],
         'public' => true,
         'publicly_queryable' => true,
-        'rewrite' => array('slug' => 'sesja', 'with_front' => false),
+        'rewrite' => ['slug' => 'sesja', 'with_front' => false],
         'has_archive' => true,
-        'supports' => ['title', 'editor', 'custom-fields'],
+        'supports' => ['title', 'editor', 'custom-fields', 'excerpt'],
         'menu_position' => 5,
+        'show_in_rest' => true
+    ]);
+    
+    // Prelegenci
+    register_post_type('prelegenci', [
+        'labels' => [
+            'name' => 'Prelegenci',
+            'singular_name' => 'Prelegent',
+            'add_new' => 'Dodaj Nowego Prelegenta',
+            'add_new_item' => 'Dodaj Nowego Prelegenta',
+            'edit_item' => 'Edytuj Prelegenta',
+            'new_item' => 'Nowy Prelegent',
+            'view_item' => 'Zobacz Prelegenta',
+            'search_items' => 'Szukaj Prelegentów',
+            'not_found' => 'Nie znaleziono Prelegentów',
+            'not_found_in_trash' => 'Nie znaleziono Prelegentów w koszu'
+        ],
+        'public' => true,
+        'has_archive' => true,
+        'supports' => ['title', 'editor', 'thumbnail', 'excerpt'],
+        'menu_position' => 5,
+        'show_in_rest' => true
+    ]);
+    
+    // Taxonomy for Prelegenci
+    register_taxonomy('prelegent_role', 'prelegenci', [
+        'labels' => [
+            'name' => 'Role Prelegentów',
+            'singular_name' => 'Rola Prelegenta',
+            'search_items' => 'Szukaj Ról',
+            'all_items' => 'Wszystkie Role',
+            'edit_item' => 'Edytuj Rolę',
+            'update_item' => 'Aktualizuj Rolę',
+            'add_new_item' => 'Dodaj Nową Rolę',
+            'new_item_name' => 'Nazwa Nowej Roli',
+            'menu_name' => 'Role'
+        ],
+        'hierarchical' => true,
         'show_in_rest' => true
     ]);
 }
 
 add_action('init', 'register_congress_custom_post_types');
 
+// Define time slots in one place
+$timeslots = [];
+$start = new DateTime('08:00');
+$end = new DateTime('23:00');
+$interval = new DateInterval('PT15M');
+$period = new DatePeriod($start, $interval, $end);
+foreach ($period as $time) {
+    $next_time = clone $time;
+    $next_time->add($interval);
+    $timeslots[] = $time->format('H:i') . ' - ' . $next_time->format('H:i');
+}
+
 // Register the shortcode
 function conference_schedule_shortcode()
 {
-    // Time slots array
-    $timeslots = [
-        '9:30 - 10:00', '10:00 - 10:30', '10:30 - 11:00', '11:00 - 11:30', '11:30 - 12:00',
-        '12:00 - 12:30', '12:30 - 13:00', '13:00 - 13:30', '13:30 - 14:00', '14:00 - 14:30',
-        '14:30 - 15:00', '15:00 - 15:30', '15:30 - 16:00', '16:00 - 16:30', '16:30 - 17:00',
-        '17:00 - 17:30', '17:30 - 18:00', '18:00 - 18:30', '18:30 - 19:00', '19:00 - 23:00'
-    ];
+    global $timeslots;
     
     // Retrieve post data
     $sceny = get_posts(['post_type' => 'kongres_scena', 'numberposts' => -1, 'orderby' => 'ID', 'order' => 'ASC']);
@@ -136,7 +180,6 @@ function conference_schedule_shortcode()
         $output .= '</tbody>';
     }
     $output .= '</table>';
-    
     
     // Return the HTML output
     return $output;
@@ -197,143 +240,297 @@ function obliczRowspan($prezentacja)
     }
     $interval = $startDateTime->diff($endDateTime);
     $minutes = $interval->h * 60 + $interval->i;
-    return ceil($minutes / 30);
+    return ceil($minutes / 15);
 }
 
-function plan_ramowy_settings_page()
+add_action('save_post', 'save_congress_presentation_meta_data');
+add_action('add_meta_boxes', 'add_congress_presentation_meta_boxes');
+add_action('add_meta_boxes', 'add_congress_day_meta_boxes');
+
+function save_congress_presentation_meta_data($post_id)
 {
-    add_menu_page(
-        'Plan Ramowy Settings',
-        'Plan Ramowy',
-        'manage_options',
-        'plan-ramowy-settings',
-        'plan_ramowy_settings_page_html',
-        'dashicons-admin-generic',
-        20
+    if (isset($_POST['czas_start'])) {
+        update_post_meta($post_id, 'czas_start', sanitize_text_field($_POST['czas_start']));
+    }
+    
+    if (isset($_POST['czas_zakonczenia'])) {
+        update_post_meta($post_id, 'czas_zakonczenia', sanitize_text_field($_POST['czas_zakonczenia']));
+    }
+    
+    if (isset($_POST['bg_color'])) {
+        update_post_meta($post_id, 'bg_color', sanitize_hex_color($_POST['bg_color']));
+    }
+    
+    if (isset($_POST['border_color'])) {
+        update_post_meta($post_id, 'border_color', sanitize_hex_color($_POST['border_color']));
+    }
+    
+    if (isset($_POST['text_color'])) {
+        update_post_meta($post_id, 'text_color', sanitize_hex_color($_POST['text_color']));
+    }
+    
+    if (isset($_POST['presentation_day_id'])) {
+        update_post_meta($post_id, 'presentation_day_id', sanitize_text_field($_POST['presentation_day_id']));
+    }
+    
+    if (isset($_POST['scena_ids'])) {
+        $scena_ids = array_map('sanitize_text_field', $_POST['scena_ids']);
+        update_post_meta($post_id, 'scena_ids', $scena_ids);
+    } else {
+        delete_post_meta($post_id, 'scena_ids');
+    }
+    
+    if (isset($_POST['prelegenci'])) {
+        $prelegenci_ids = array_map('sanitize_text_field', $_POST['prelegenci']);
+        update_post_meta($post_id, 'prelegenci', $prelegenci_ids);
+    } else {
+        delete_post_meta($post_id, 'prelegenci');
+    }
+    
+    if (!empty($_POST['podsumowanie'])) {
+        update_post_meta($post_id, '_podsumowanie', $_POST['podsumowanie']);
+    }
+}
+
+function add_congress_presentation_meta_boxes()
+{
+    add_meta_box(
+        'congress_presentation_day',
+        'Dzień Prezentacji',
+        'congress_presentation_day_callback',
+        'kongres_prezentacja',
+        'side',
+        'high'
+    );
+    
+    add_meta_box(
+        'congress_presentation_scena',
+        'Scena',
+        'congress_presentation_scena_meta_box_callback',
+        'kongres_prezentacja',
+        'side',
+        'high'
+    );
+    
+    add_meta_box(
+        'congress_presentation_times',
+        'Czas Prezentacji',
+        'congress_presentation_times_meta_box_callback',
+        'kongres_prezentacja',
+        'side',
+        'default'
+    );
+    
+    add_meta_box(
+        'congress_presentation_colors',
+        'Ustawienia Prezentacji',
+        'congress_presentation_colors_meta_box_callback',
+        'kongres_prezentacja',
+        'side',
+        'default'
+    );
+    
+    add_meta_box(
+        'congress_presentation_prelegenci',
+        'Prelegenci',
+        'congress_presentation_prelegenci_meta_box_callback',
+        'kongres_prezentacja',
+        'side',
+        'default'
     );
 }
 
-add_action('admin_menu', 'plan_ramowy_settings_page');
-
-function plan_ramowy_settings_page_html()
+function add_congress_day_meta_boxes()
 {
-    // Check user capability
-    if (!current_user_can('manage_options')) {
-        return;
+    add_meta_box(
+        'congress_day_scenes',
+        'Lista scen',
+        'congress_day_scenes_meta_box_callback',
+        'kongres_dzien',
+        'normal',
+        'default'
+    );
+    
+    add_meta_box(
+        'congress_day_times',
+        'Czas Otwarcia i Zamknięcia',
+        'congress_day_times_meta_box_callback',
+        'kongres_dzien',
+        'side',
+        'default'
+    );
+}
+
+function save_congress_day_meta_data($post_id)
+{
+    if (isset($_POST['scene_order'])) {
+        update_post_meta($post_id, 'scene_order', sanitize_text_field($_POST['scene_order']));
     }
     
-    // Save uploaded images
-    if (isset($_FILES['header_image']) && $_FILES['header_image']['error'] === UPLOAD_ERR_OK) {
-        $uploaded_header = wp_handle_upload($_FILES['header_image'], ['test_form' => false]);
-        if (!isset($uploaded_header['error'])) {
-            update_option('plan_ramowy_header_image', $uploaded_header['url']);
+    foreach ($_POST as $key => $value) {
+        if (strpos($key, 'scene_name_') === 0 || strpos($key, 'scene_text_size_') === 0) {
+            update_post_meta($post_id, $key, sanitize_text_field($value));
+        } elseif (strpos($key, 'scene_bg_color_') === 0 || strpos($key, 'scene_text_color_') === 0 ) {
+            update_post_meta($post_id, $key, sanitize_hex_color($value));
         }
     }
     
-    if (isset($_FILES['footer_image']) && $_FILES['footer_image']['error'] === UPLOAD_ERR_OK) {
-        $uploaded_footer = wp_handle_upload($_FILES['footer_image'], ['test_form' => false]);
-        if (!isset($uploaded_footer['error'])) {
-            update_option('plan_ramowy_footer_image', $uploaded_footer['url']);
-        }
+    if (isset($_POST['otwarcie'])) {
+        update_post_meta($post_id, 'otwarcie', sanitize_text_field($_POST['otwarcie']));
     }
     
-    echo '<div class="wrap">';
-    echo '<h1>' . esc_html(get_admin_page_title()) . '</h1>';
-    
-    // Sprawdź, czy formularz został wysłany
-    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'generate_pdf') {
-        // Tutaj wywołujemy funkcję generującą PDF
-        $pdf_path = generate_plan_ramowy_pdf();
-        echo '<div class="updated"><p>PDF generated successfully. <a href="' . esc_url($pdf_path) . '">Download PDF</a></p></div>';
+    if (isset($_POST['zamkniecie'])) {
+        update_post_meta($post_id, 'zamkniecie', sanitize_text_field($_POST['zamkniecie']));
     }
-    
-    // Formularz do przesyłania obrazów i generowania PDF
-    ?>
-    <form method="post" action="" enctype="multipart/form-data">
-        <?php
-        // Nonce field for security
-        wp_nonce_field('plan_ramowy_update_images', 'plan_ramowy_images_nonce');
-        ?>
-        <table class="form-table">
-            <tr>
-                <th scope="row"><label for="header_image">Header Image</label></th>
-                <td><input type="file" name="header_image" id="header_image" accept="image/png, image/jpeg"></td>
-            </tr>
-            <tr>
-                <th scope="row"><label for="footer_image">Footer Image</label></th>
-                <td><input type="file" name="footer_image" id="footer_image" accept="image/png, image/jpeg"></td>
-            </tr>
-        </table>
-        <?php submit_button('Upload Images'); ?>
-
-        <table class="form-table">
-            <tr>
-                <th scope="row"><label for="header_image">Generuj PDF</label></th>
-                <td><input type="hidden" name="action" value="generate_pdf"></td>
-            </tr>
-
-        </table>
-        <?php submit_button('Generate PDF'); ?>
-    </form></div>
-    <?php
 }
 
-
-function generate_plan_ramowy_pdf()
+function congress_presentation_day_callback($post)
 {
-    // Zaladowanie biblioteki mPDF
-    require_once(plugin_dir_path(__FILE__) . '/..//vendor/autoload.php');
-    /*
-    var_dump(wp_upload_dir());
-    exit;
-    */
-    // Pobierz URL-e obrazów nagłówka i stopki z opcji WordPress
-    $header_image = get_option('plan_ramowy_header_image');
-    $footer_image = get_option('plan_ramowy_footer_image');
+    $selected_day = get_post_meta($post->ID, 'presentation_day_id', true);
+    $days = get_posts(['post_type' => 'kongres_dzien', 'numberposts' => -1, 'orderby' => 'title', 'order' => 'ASC']);
     
-    // Utwórz instancję mPDF
-    $mpdf = new \Mpdf\Mpdf([
-        'mode' => 'utf-8',
-        'format' => 'A4',
-        'margin_header' => 5,
-        'margin_footer' => 5,
-        'orientation' => 'L'
-    ]);
-    
-    // Dodaj obrazy nagłówka i stopki jako HTML header & footer w PDF
-    if ($header_image) {
-       $mpdf->SetHTMLHeader('<div style="text-align:center;"><img src="' . $header_image . '" width="100%"></div>');
+    echo '<select name="presentation_day_id" id="presentation_day_id">';
+    echo '<option value="">Wybierz dzień...</option>';
+    foreach ($days as $day) {
+        $selected = ($selected_day == $day->ID) ? 'selected' : '';
+        echo '<option value="' . esc_attr($day->ID) . '" ' . $selected . '>' . esc_html(get_the_title($day->ID)) . '</option>';
     }
-    if ($footer_image) {
-       $mpdf->SetHTMLFooter('<div style="text-align:center;"><img src="' . $footer_image . '" width="100%"></div>');
-    }
-    
-    // Dodanie CSS ze stylami z front endu
-    $stylesheet = file_get_contents(get_template_directory_uri() . '/style.css'); // Upewnij się, że ta ścieżka jest prawidłowa
-    $mpdf->WriteHTML($stylesheet, \Mpdf\HTMLParserMode::HEADER_CSS);
-    
-    
-    
-    // Dodanie CSS ze stylami z pluginu
-    $stylesheet2 = file_get_contents(plugin_dir_path(__FILE__) . '/../public/styles/pdf.css'); // Upewnij się, że ta ścieżka jest prawidłowa
-    $mpdf->WriteHTML($stylesheet2, \Mpdf\HTMLParserMode::HEADER_CSS);
-    
-    // Dodanie CSS ze stylami z pluginu
-    $stylesheet1 = file_get_contents(plugin_dir_path(__FILE__) . '/../public/styles/styles.css'); // Upewnij się, że ta ścieżka jest prawidłowa
-    $mpdf->WriteHTML($stylesheet1, \Mpdf\HTMLParserMode::HEADER_CSS);
-
-
-// Pobierz treść HTML z shortcode'u
-    $content_html = do_shortcode('[conference_schedule]');
-
-// Wykonaj shortcode w kontekście HTML
-    $content_html_executed = apply_filters('the_content', $content_html);
-    
-    $mpdf->WriteHTML($content_html_executed, \Mpdf\HTMLParserMode::HTML_BODY);
-    
-    // Generowanie PDF
-    $file_path = wp_upload_dir()['basedir'] . '/plan_ramowy.pdf'; // Ścieżka zapisu pliku PDF
-    $mpdf->Output($file_path, 'F');
-    
-    return wp_upload_dir()['baseurl'] . '/plan_ramowy.pdf';
+    echo '</select>';
 }
+
+function congress_presentation_scena_meta_box_callback($post)
+{
+    $selected_sceny = get_post_meta($post->ID, 'scena_ids', true);
+    if (!is_array($selected_sceny)) {
+        $selected_sceny = [];
+    }
+    
+    $sceny = get_posts(['post_type' => 'kongres_scena', 'numberposts' => -1, 'orderby' => 'ID', 'order' => 'ASC']);
+    
+    echo '<select name="scena_ids[]" id="scena_ids" multiple size="' . count($sceny) . '" style="width: 100%;">';
+    foreach ($sceny as $scena) {
+        $selected = in_array($scena->ID, $selected_sceny) ? 'selected' : '';
+        echo '<option value="' . esc_attr($scena->ID) . '" ' . $selected . '>' . esc_html(get_the_title($scena->ID)) . '</option>';
+    }
+    echo '</select>';
+    echo '<p>Trzymaj klawisz Ctrl (Cmd na Mac) aby zaznaczyć więcej niż jedną scenę.</p>';
+}
+
+function congress_presentation_times_meta_box_callback($post)
+{
+    global $timeslots;
+    
+    $czas_start = get_post_meta($post->ID, 'czas_start', true);
+    $czas_zakonczenia = get_post_meta($post->ID, 'czas_zakonczenia', true);
+    
+    echo '<label for="czas_start">Czas rozpoczęcia:</label>';
+    echo '<select name="czas_start" id="czas_start">';
+    foreach ($timeslots as $timeslot) {
+        $times = explode(' - ', $timeslot);
+        $selected = ($czas_start == $times[0]) ? 'selected' : '';
+        echo '<option value="' . esc_attr($times[0]) . '" ' . $selected . '>' . esc_html($timeslot) . '</option>';
+    }
+    echo '</select>';
+    
+    echo '<label for="czas_zakonczenia">Czas zakończenia:</label>';
+    echo '<select name="czas_zakonczenia" id="czas_zakonczenia">';
+    foreach ($timeslots as $timeslot) {
+        $times = explode(' - ', $timeslot);
+        $selected = ($czas_zakonczenia == $times[1]) ? 'selected' : '';
+        echo '<option value="' . esc_attr($times[1]) . '" ' . $selected . '>' . esc_html($timeslot) . '</option>';
+    }
+    echo '</select>';
+}
+
+function congress_presentation_colors_meta_box_callback($post)
+{
+    $bg_color = get_post_meta($post->ID, 'bg_color', true);
+    $border_color = get_post_meta($post->ID, 'border_color', true);
+    $text_color = get_post_meta($post->ID, 'text_color', true);
+    
+    echo '<p><label for="bg_color">Kolor tła:</label>';
+    echo '<input type="color" id="bg_color" name="bg_color" value="' . esc_attr($bg_color) . '"></p>';
+    
+    echo '<p><label for="border_color">Kolor obramowania:</label>';
+    echo '<input type="color" id="border_color" name="border_color" value="' . esc_attr($border_color) . '"></p>';
+    
+    echo '<p><label for="border_color">Kolor tekstu:</label>';
+    echo '<input type="color" id="text_color" name="text_color" value="' . esc_attr($text_color) . '"></p>';
+}
+
+function congress_presentation_prelegenci_meta_box_callback($post)
+{
+    $selected_prelegenci = get_post_meta($post->ID, 'prelegenci', true);
+    if (!is_array($selected_prelegenci)) {
+        $selected_prelegenci = [];
+    }
+    
+    $prelegenci = get_posts(['post_type' => 'prelegenci', 'numberposts' => -1, 'orderby' => 'ID', 'order' => 'ASC']);
+    
+    echo '<select name="prelegenci[]" id="prelegenci" multiple size="' . count($prelegenci) . '" style="width: 100%;">';
+    foreach ($prelegenci as $prelegent) {
+        $selected = in_array($prelegent->ID, $selected_prelegenci) ? 'selected' : '';
+        echo '<option value="' . esc_attr($prelegent->ID) . '" ' . $selected . '>' . esc_html(get_the_title($prelegent->ID)) . '</option>';
+    }
+    echo '</select>';
+    echo '<p>Trzymaj klawisz Ctrl (Cmd na Mac) aby zaznaczyć więcej niż jednego prelegenta.</p>';
+}
+
+function congress_day_scenes_meta_box_callback($post)
+{
+    $scene_order = get_post_meta($post->ID, 'scene_order', true);
+    if (!is_array($scene_order)) {
+        $scene_order = [];
+    }
+    
+    $sceny = get_posts(['post_type' => 'kongres_scena', 'numberposts' => -1, 'orderby' => 'ID', 'order' => 'ASC']);
+    
+    echo '<ul id="scene_order">';
+    foreach ($sceny as $scena) {
+        $scene_name = get_post_meta($post->ID, 'scene_name_' . $scena->ID, true);
+        $bg_color = get_post_meta($post->ID, 'scene_bg_color_' . $scena->ID, true);
+        $text_color = get_post_meta($post->ID, 'scene_text_color_' . $scena->ID, true);
+        $text_size = get_post_meta($post->ID, 'scene_text_size_' . $scena->ID, true);
+        echo '<li data-id="' . esc_attr($scena->ID) . '">';
+        echo '<span class="handle">☰</span>';
+        echo '<input type="text" name="scene_name_' . esc_attr($scena->ID) . '" value="' . esc_attr($scene_name) . '" placeholder="' . esc_html(get_the_title($scena->ID)) . '">';
+        echo '<input type="color" name="scene_bg_color_' . esc_attr($scena->ID) . '" value="' . esc_attr($bg_color) . '" placeholder="Kolor tła">';
+        echo '<input type="color" name="scene_text_color_' . esc_attr($scena->ID) . '" value="' . esc_attr($text_color) . '" placeholder="Kolor tekstu">';
+        echo '<input type="text" name="scene_text_size_' . esc_attr($scena->ID) . '" value="' . esc_attr($text_size) . '" placeholder="Wielkość tekstu">';
+        echo '</li>';
+    }
+    echo '</ul>';
+    echo '<input type="hidden" id="scene_order_input" name="scene_order" value="' . esc_attr(implode(',', $scene_order)) . '">';
+}
+
+function congress_day_times_meta_box_callback($post)
+{
+    global $timeslots;
+    
+    $otwarcie = get_post_meta($post->ID, 'otwarcie', true);
+    $zamkniecie = get_post_meta($post->ID, 'zamkniecie', true);
+    
+    echo '<label for="otwarcie">Czas Otwarcia:</label>';
+    echo '<select name="otwarcie" id="otwarcie">';
+    foreach ($timeslots as $timeslot) {
+        $times = explode(' - ', $timeslot);
+        $selected = ($otwarcie == $times[0]) ? 'selected' : '';
+        echo '<option value="' . esc_attr($times[0]) . '" ' . $selected . '>' . esc_html($timeslot) . '</option>';
+    }
+    echo '</select>';
+    
+    echo '<label for="zamkniecie">Czas Zamknięcia:</label>';
+    echo '<select name="zamkniecie" id="zamkniecie">';
+    foreach ($timeslots as $timeslot) {
+        $times = explode(' - ', $timeslot);
+        $selected = ($zamkniecie == $times[1]) ? 'selected' : '';
+        echo '<option value="' . esc_attr($times[1]) . '" ' . $selected . '>' . esc_html($timeslot) . '</option>';
+    }
+    echo '</select>';
+}
+
+// Save Congress Day Meta Data
+add_action('save_post', 'save_congress_day_meta_data');
+
+include(plugin_dir_path(__FILE__) . 'option-page.php');
+
