@@ -20,10 +20,12 @@ function conference_schedule_shortcode()
     $dni = get_posts(['post_type' => 'kongres_dzien', 'numberposts' => -1, 'orderby' => 'ID', 'order' => 'ASC']);
 
     $activePresentations = [];
-    $output = '<table id="plan-ramowy" aria-describedby="conference-schedule">';
-    $output .= '<caption>Plan Ramowy</caption>';
+    //$output = '<div id="plan-ramowy" aria-describedby="conference-schedule">';
+    $output = '';
+    //$output .= '<caption>Plan Ramowy</caption>';
 
     foreach ($dni as $dzien) {
+        $output .= '<table class="conference-day-schedule">';
         // Retrieve scene order and settings for the day
         $scene_order = get_post_meta($dzien->ID, 'scene_order', true);
         if ($scene_order) {
@@ -112,9 +114,9 @@ function conference_schedule_shortcode()
             }
             $output .= '</tr>';
         }
-        $output .= '</tbody>';
+        $output .= '</tbody></table>';
     }
-    $output .= '</table>';
+    //$output .= '</div>';
 
     // Return the HTML output
     return $output;
