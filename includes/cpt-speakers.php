@@ -1,5 +1,5 @@
 <?php
-function register_speakers_cpt()
+function register_speakers_post_type()
 {
     register_post_type('prelegenci', [
         'labels' => [
@@ -16,26 +16,53 @@ function register_speakers_cpt()
         ],
         'public' => true,
         'has_archive' => true,
-        'supports' => ['title', 'editor', 'thumbnail', 'excerpt'],
+        'rewrite' => ['slug' => 'prelegenci', 'with_front' => false],
+        'supports' => ['title', 'editor','excerpt'],
         'menu_position' => 5,
         'show_in_rest' => true
     ]);
-    
-    register_taxonomy('prelegent_role', 'prelegenci', [
-        'labels' => [
-            'name' => 'Role Prelegentów',
-            'singular_name' => 'Rola Prelegenta',
-            'search_items' => 'Szukaj Ról',
-            'all_items' => 'Wszystkie Role',
-            'edit_item' => 'Edytuj Rolę',
-            'update_item' => 'Aktualizuj Rolę',
-            'add_new_item' => 'Dodaj Nową Rolę',
-            'new_item_name' => 'Nazwa Nowej Roli',
-            'menu_name' => 'Role'
-        ],
-        'hierarchical' => true,
-        'show_in_rest' => true
-    ]);
-}
 
-add_action('init', 'register_speakers_cpt');
+    // Add custom image size for speaker photos
+    add_image_size('speaker-thumbnail', 500, 500, true);
+
+    // Register the custom fields
+    if (function_exists('register_field_group')) {
+        register_field_group([
+            'id' => 'acf_speakers',
+            'title' => 'Prelegent',
+            'fields' => [
+                [
+                    'key' => 'field_5a7b9a8c1d8df',
+                    'label' => 'Biografia',
+                    'name' => 'biografia',
+                    'type' => 'textarea',
+                    'default_value' => '',
+                    'placeholder' => '',
+                    'maxlength' => '',
+                    'rows' => '',
+                    'formatting' => 'br',
+                ],
+                [
+                    'key' => 'field_5a7b9a8c1d8e0',
+                    'label' => 'Image',
+                    'name' => 'image',
+                    'type' => 'image',
+                    'save_format' => 'id',
+                    'preview_size' => 'thumbnail',
+                    'library' => 'all',
+                ],
+            ],
+            'location' => [
+                [
+                    [
+                        'param' => 'post_type',
+                        'operator' => '==',
+                        'value' => 'prelegenci',
+                    ],
+                ],
+            ],
+        ]);
+    }
+}
+add_action('init', 'register_speakers_post_type');
+?>

@@ -18,9 +18,8 @@ include_once CONGRESS_PLUGIN_DIR . 'includes/cpt-speakers.php';
 // Include Meta Boxes
 include_once CONGRESS_PLUGIN_DIR . 'includes/meta-boxes.php';
 //include_once CONGRESS_PLUGIN_DIR . 'includes/option-page.php';
-// Include Shortcodes
 include_once CONGRESS_PLUGIN_DIR . 'includes/shortcodes.php';
-
+include_once CONGRESS_PLUGIN_DIR . 'includes/hooks-filters.php';
 
 // Dodaj skrypty i style
 function pr_enqueue_scripts() {
