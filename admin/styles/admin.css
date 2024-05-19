@@ -1,16 +1,41 @@
-#scene_order {
+.congress-presentation-prelegenci-meta-box {
+    max-width: 600px;
+    margin-top: 20px;
+}
+
+#scene_order, #prelegenci_list {
     list-style: none;
     margin: 0;
     padding: 0;
 }
-#scene_order li {
-    margin: 5px 0;
-    padding: 10px;
-    border: 1px solid #ccc;
+
+#scene_order li, #prelegenci_list li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 5px;
+    border: 1px solid #ddd;
     background-color: #f9f9f9;
-    cursor: move;
 }
-.handle {
+
+#scene_order li .handle, #prelegenci_list li .handle {
     cursor: move;
-    padding-right: 10px;
+    margin-right: 10px;
 }
+
+#scene_order li img, #prelegenci_list li img {
+    margin-right: 10px;
+}
+
+#prelegenci_list li img.prelegent-thumbnail {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+}
+
+#scene_order li .remove-prelegent, #prelegenci_list li .remove-prelegent {
+    margin-left: auto;
+    color: #d9534f;
+    cursor: pointer;
+}
+

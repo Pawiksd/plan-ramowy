@@ -1,18 +1,18 @@
 <?php
-function register_congress_presentation_cpt()
+function register_congress_presentation_post_type()
 {
     register_post_type('kongres_prezentacja', [
         'labels' => [
-            'name' => 'Prezentacje Kongresu',
-            'singular_name' => 'Prezentacja Kongresu',
-            'add_new' => 'Dodaj Nową Prezentację',
-            'add_new_item' => 'Dodaj Nową Prezentację Kongresu',
-            'edit_item' => 'Edytuj Prezentację Kongresu',
-            'new_item' => 'Nowa Prezentacja Kongresu',
-            'view_item' => 'Zobacz Prezentację Kongresu',
-            'search_items' => 'Szukaj Prezentacji Kongresu',
-            'not_found' => 'Nie znaleziono Prezentacji Kongresu',
-            'not_found_in_trash' => 'Nie znaleziono Prezentacji Kongresu w koszu'
+            'name' => 'Sesje',
+            'singular_name' => 'Sesja',
+            'add_new' => 'Dodaj Nową Sesję',
+            'add_new_item' => 'Dodaj Nową Sesję',
+            'edit_item' => 'Edytuj Sesję',
+            'new_item' => 'Nowa Sesja',
+            'view_item' => 'Zobacz Sesję',
+            'search_items' => 'Szukaj Sesji',
+            'not_found' => 'Nie znaleziono Sesji',
+            'not_found_in_trash' => 'Nie znaleziono Sesji w koszu'
         ],
         'public' => true,
         'publicly_queryable' => true,
@@ -23,8 +23,7 @@ function register_congress_presentation_cpt()
         'show_in_rest' => true
     ]);
 }
-
-add_action('init', 'register_congress_presentation_cpt');
+add_action('init', 'register_congress_presentation_post_type');
 
 // Meta boxes for Congress Presentation
 function add_congress_presentation_meta_boxes()
@@ -70,8 +69,8 @@ function add_congress_presentation_meta_boxes()
         'Prelegenci',
         'congress_presentation_prelegenci_meta_box_callback',
         'kongres_prezentacja',
-        'side',
-        'default'
+        'normal',
+        'high'
     );
 }
 
@@ -111,7 +110,7 @@ function save_congress_presentation_meta_data($post_id)
     }
     
     if (isset($_POST['prelegenci'])) {
-        $prelegenci_ids = array_map('sanitize_text_field', $_POST['prelegenci']);
+        $prelegenci_ids = array_map('sanitize_text_field', explode(',', $_POST['prelegenci']));
         update_post_meta($post_id, 'prelegenci', $prelegenci_ids);
     } else {
         delete_post_meta($post_id, 'prelegenci');
@@ -123,3 +122,38 @@ function save_congress_presentation_meta_data($post_id)
 }
 
 add_action('save_post', 'save_congress_presentation_meta_data');
+
+function congress_presentation_prelegenci_meta_box_callback($post)
+{
+    $selected_prelegenci = get_post_meta($post->ID, 'prelegenci', true);
+    if (!is_array($selected_prelegenci)) {
+        $selected_prelegenci = [];
+    }
+    
+    $prelegenci = get_posts(['post_type' => 'prelegenci', 'numberposts' => -1, 'orderby' => 'ID', 'order' => 'ASC']);
+    
+    echo '<div class="congress-presentation-prelegenci-meta-box">';
+    echo '<ul id="prelegenci_list">';
+    foreach ($selected_prelegenci as $prelegent_id) {
+        $prelegent = get_post($prelegent_id);
+        $thumbnail = get_the_post_thumbnail($prelegent_id, [50, 50], ['class' => 'prelegent-thumbnail']);
+        echo '<li data-id="' . esc_attr($prelegent_id) . '">';
+        echo '<span class="handle">☰</span>';
+        echo $thumbnail;
+        echo '<span>' . esc_html($prelegent->post_title) . '</span>';
+        echo '<a href="#" class="remove-prelegent">Usuń</a>';
+        echo '</li>';
+    }
+    echo '</ul>';
+    echo '<select id="prelegent_select">';
+    echo '<option value="">Wybierz prelegenta...</option>';
+    foreach ($prelegenci as $prelegent) {
+        $thumbnail_url = get_the_post_thumbnail_url($prelegent->ID, [50, 50]);
+        echo '<option value="' . esc_attr($prelegent->ID) . '" data-thumbnail="' . esc_attr($thumbnail_url) . '">' . esc_html($prelegent->post_title) . '</option>';
+    }
+    echo '</select>';
+    echo '<button id="add_prelegent" class="button">Dodaj Prelegenta</button>';
+    
+    echo '<input type="hidden" name="prelegenci" id="prelegenci_input" value="' . esc_attr(implode(',', $selected_prelegenci)) . '">';
+    echo '</div>';
+}

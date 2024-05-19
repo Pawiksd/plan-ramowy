@@ -73,23 +73,6 @@ function congress_presentation_colors_meta_box_callback($post)
     echo '<input type="color" id="text_color" name="text_color" value="' . esc_attr($text_color) . '"></p>';
 }
 
-function congress_presentation_prelegenci_meta_box_callback($post)
-{
-    $selected_prelegenci = get_post_meta($post->ID, 'prelegenci', true);
-    if (!is_array($selected_prelegenci)) {
-        $selected_prelegenci = [];
-    }
-    
-    $prelegenci = get_posts(['post_type' => 'prelegenci', 'numberposts' => -1, 'orderby' => 'ID', 'order' => 'ASC']);
-    
-    echo '<select name="prelegenci[]" id="prelegenci" multiple size="' . count($prelegenci) . '" style="width: 100%;">';
-    foreach ($prelegenci as $prelegent) {
-        $selected = in_array($prelegent->ID, $selected_prelegenci) ? 'selected' : '';
-        echo '<option value="' . esc_attr($prelegent->ID) . '" ' . $selected . '>' . esc_html(get_the_title($prelegent->ID)) . '</option>';
-    }
-    echo '</select>';
-    echo '<p>Trzymaj klawisz Ctrl (Cmd na Mac) aby zaznaczyć więcej niż jednego prelegenta.</p>';
-}
 
 function congress_day_scenes_meta_box_callback($post)
 {

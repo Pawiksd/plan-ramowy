@@ -65,3 +65,51 @@ footer.wp-block-template-part{
     overflow-x: hidden;
 }
 
+
+#prelegenci_list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+#prelegenci_list li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 5px;
+    border: 1px solid #ddd;
+    background-color: #f9f9f9;
+}
+#prelegenci_list li .handle {
+    cursor: move;
+    margin-right: 10px;
+}
+#prelegenci_list li img {
+    margin-right: 10px;
+}
+#prelegenci_list li .remove-prelegent {
+    margin-left: auto;
+    color: #d9534f;
+    cursor: pointer;
+}
+.single-session .session-details {
+    display: flex;
+    flex-direction: column;
+}
+.single-session .session-speakers ul {
+    list-style: none;
+    padding: 0;
+}
+.single-session .session-speakers ul li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.single-session .session-speakers ul li img {
+    margin-right: 20px;
+}
+.single-session .session-speakers ul li h3 {
+    margin: 0;
+}
+.single-session .session-speakers ul li p {
+    margin: 0;
+}
