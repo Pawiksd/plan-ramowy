@@ -57,49 +57,52 @@ function list_available_templates() {
     
     
 }
-
 function modify_kongres_prezentacja_content($content) {
-    if (is_singular('kongres_prezentacja') && in_the_loop() && is_main_query()) {
-        ob_start();
-        ?>
-        <div class="container single-session">
-            <h1><?php the_title(); ?></h1>
-            <div class="session-details">
-                <?php if (has_post_thumbnail()) : ?>
-                    <?php the_post_thumbnail('large'); ?>
-                <?php endif; ?>
-                <div class="session-content">
-                    <?php the_content(); ?>
-                </div>
-                <div class="session-excerpt">
-                    <?php the_excerpt(); ?>
-                </div>
-                <div class="session-speakers">
-                    <h2>Prelegenci</h2>
-                    <ul>
-                        <?php
-                        $prelegenci = get_post_meta(get_the_ID(), 'prelegenci', true);
-                        if (is_array($prelegenci) && !empty($prelegenci)) {
-                            foreach ($prelegenci as $prelegent_id) {
-                                $prelegent = get_post($prelegent_id);
-                                $thumbnail = get_the_post_thumbnail($prelegent_id, 'thumbnail');
-                                $biografia = get_post_meta($prelegent_id, 'biografia', true);
-                                echo '<li>';
-                                echo $thumbnail;
-                                echo '<h3>' . esc_html($prelegent->post_title) . '</h3>';
-                                echo '<p>' . esc_html($biografia) . '</p>';
-                                echo '</li>';
-                            }
-                        } else {
-                            echo '<li>Brak prelegentów przypisanych do tej sesji.</li>';
-                        }
-                        ?>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <?php
-        return ob_get_clean();
+    if (is_singular('kongres_prezentacja')) {
+        $post_id = get_the_ID();
+        $output = '<div class="container single-session">';
+        $output .= '<h1>' . get_the_title() . '</h1>';
+        $output .= '<div class="session-details">';
+        
+        if (has_post_thumbnail()) {
+            $output .= get_the_post_thumbnail($post_id, 'large', ['loading' => 'lazy']);
+        }
+        
+        $output .= '<div class="session-content">' . get_the_content() . '</div>';
+        $output .= '<div class="session-excerpt">' . get_the_excerpt() . '</div>';
+        
+        $output .= '<div class="session-speakers">';
+        $output .= '<h2>Prelegenci</h2>';
+        $output .= '<ul>';
+        
+        $prelegenci = get_post_meta($post_id, 'prelegenci', true);
+        if (is_array($prelegenci) && !empty($prelegenci)) {
+            $prelegenci_data = get_posts([
+                'post_type' => 'prelegent',
+                'post__in' => $prelegenci,
+                'orderby' => 'post__in',
+                'posts_per_page' => -1
+            ]);
+            
+            foreach ($prelegenci_data as $prelegent) {
+                $thumbnail = get_the_post_thumbnail($prelegent->ID, 'thumbnail', ['loading' => 'lazy']);
+                $biografia = get_post_meta($prelegent->ID, 'biografia', true);
+                $output .= '<li>';
+                $output .= $thumbnail;
+                $output .= '<h3>' . esc_html($prelegent->post_title) . '</h3>';
+                $output .= '<p>' . esc_html($biografia) . '</p>';
+                $output .= '</li>';
+            }
+        } else {
+            $output .= '<li>Brak prelegentów przypisanych do tej sesji.</li>';
+        }
+        
+        $output .= '</ul>';
+        $output .= '</div>'; // .session-speakers
+        $output .= '</div>'; // .session-details
+        $output .= '</div>'; // .container single-session
+        
+        return $output;
     }
     
     return $content;

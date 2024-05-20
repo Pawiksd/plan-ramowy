@@ -88,9 +88,9 @@ $content_div->load($new_content);
 }
 
 // Output the modified HTML
-echo '<pre>';
+/*echo '<pre>';
 var_dump($dom);
-exit;
+exit;*/
 echo $dom->saveHTML();
 
 get_footer();
