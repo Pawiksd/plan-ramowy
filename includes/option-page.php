@@ -82,7 +82,9 @@ function plan_ramowy_settings_page_html() {
         </div>
         
         <?php submit_button('Zapisz Ustawienia'); ?>
-        
+    </form>
+
+    <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
         <h2>Generuj PDF</h2>
         <input type="hidden" name="action" value="generate_pdf">
         <?php submit_button('Generate PDF'); ?>
@@ -198,49 +200,44 @@ function plan_ramowy_settings_page_html() {
     <?php
 }
 
-
-
-function generate_plan_ramowy_pdf()
-{
-    
-    /*
-     * ToDo: wyslij html pobierz pdf i zapisz lokalnie
-     * */
-    
-    // Dodaj obrazy nagłówka i stopki jako HTML header & footer w PDF
-    /*  if ($header_image) {
-         $mpdf->SetHTMLHeader('<div style="text-align:center;"><img src="' . $header_image . '" width="100%"></div>');
-      }
-      if ($footer_image) {
-         $mpdf->SetHTMLFooter('<div style="text-align:center;"><img src="' . $footer_image . '" width="100%"></div>');
-      }
-      
-      // Dodanie CSS ze stylami z front endu
-      $stylesheet = file_get_contents(get_template_directory_uri() . '/style.css'); // Upewnij się, że ta ścieżka jest prawidłowa
-      $mpdf->WriteHTML($stylesheet, \Mpdf\HTMLParserMode::HEADER_CSS);
-      
-      
-      
-      // Dodanie CSS ze stylami z pluginu
-      $stylesheet2 = file_get_contents(plugin_dir_path(__FILE__) . '/../public/styles/pdf.css'); // Upewnij się, że ta ścieżka jest prawidłowa
-      $mpdf->WriteHTML($stylesheet2, \Mpdf\HTMLParserMode::HEADER_CSS);
-      
-      // Dodanie CSS ze stylami z pluginu
-      $stylesheet1 = file_get_contents(plugin_dir_path(__FILE__) . '/../public/styles/styles.css'); // Upewnij się, że ta ścieżka jest prawidłowa
-      $mpdf->WriteHTML($stylesheet1, \Mpdf\HTMLParserMode::HEADER_CSS);
-  
-  
-  // Pobierz treść HTML z shortcode'u
-      $content_html = do_shortcode('[conference_schedule]');
-  
-  // Wykonaj shortcode w kontekście HTML
-      $content_html_executed = apply_filters('the_content', $content_html);
-      
-      $mpdf->WriteHTML($content_html_executed, \Mpdf\HTMLParserMode::HTML_BODY);
-      
-      // Generowanie PDF
-      $file_path = wp_upload_dir()['basedir'] . '/plan_ramowy.pdf'; // Ścieżka zapisu pliku PDF
-      $mpdf->Output($file_path, 'F');
-      
-      return wp_upload_dir()['baseurl'] . '/plan_ramowy.pdf';*/
+function generate_pdf_request() {
+    if (isset($_POST['action']) && $_POST['action'] === 'generate_pdf') {
+        $url = 'https://kongres.wpdevelopers.eu/conference-schedule/';
+        $username = 'your_username'; // Replace with actual username
+        $password = 'your_password'; // Replace with actual password
+        
+        $response = wp_remote_post('http://localhost:3000/generate-pdf', array(
+            'method'    => 'POST',
+            'body'      => json_encode(array(
+                'url'      => $url,
+                'username' => $username,
+                'password' => $password,
+            )),
+            'headers'   => array(
+                'Content-Type' => 'application/json'
+            ),
+        ));
+        
+        if (is_wp_error($response)) {
+            wp_die('Error: ' . $response->get_error_message());
+        }
+        
+        $pdf_content = wp_remote_retrieve_body($response);
+        
+        if ($pdf_content) {
+            $upload_dir = wp_upload_dir();
+            $pdf_path = $upload_dir['basedir'] . '/plan_ramowy.pdf';
+            $pdf_url = $upload_dir['baseurl'] . '/plan_ramowy.pdf';
+            
+            // Save the PDF content to a file
+            file_put_contents($pdf_path, $pdf_content);
+            
+            // Provide a link to the saved PDF
+            echo '<div class="notice notice-success"><p>PDF generated successfully. <a href="' . esc_url($pdf_url) . '">Download PDF</a></p></div>';
+        } else {
+            wp_die('Error generating PDF');
+        }
+    }
 }
+add_action('admin_post_generate_pdf', 'generate_pdf_request');
+

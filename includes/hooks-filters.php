@@ -165,3 +165,40 @@ function remove_time_from_post( $the_time, $format, $post ) {
 
 add_filter( 'get_the_date', 'remove_date_from_post', 10, 3 );
 add_filter( 'get_the_time', 'remove_time_from_post', 10, 3 );
+
+function plan_ramowy_register_endpoints() {
+    add_rewrite_rule('^conference-schedule$', 'index.php?conference_schedule=true', 'top');
+    add_rewrite_tag('%conference_schedule%', '([^&]+)');
+}
+add_action('init', 'plan_ramowy_register_endpoints');
+
+function plan_ramowy_endpoint_template($template) {
+    global $wp_query;
+    
+    if (isset($wp_query->query_vars['conference_schedule'])) {
+        $custom_template = plugin_dir_path(__FILE__) . '../public/templates/conference-schedule-template.php';
+        if ($custom_template) {
+            return $custom_template;
+        }
+    }
+    
+    return $template;
+}
+add_filter('template_include', 'plan_ramowy_endpoint_template');
+
+function plan_ramowy_basic_authenticate() {
+    global $wp_query;
+    
+    if (isset($wp_query->query_vars['conference_schedule'])){
+        $username = 'your_username';
+        $password = 'your_password';
+        
+        if (!isset($_SERVER['PHP_AUTH_USER']) || $_SERVER['PHP_AUTH_USER'] !== $username || $_SERVER['PHP_AUTH_PW'] !== $password) {
+            header('WWW-Authenticate: Basic realm="Conference Schedule"');
+            header('HTTP/1.0 401 Unauthorized');
+            echo 'Authorization required.';
+            exit;
+        }
+    }
+}
+add_action('template_redirect', 'plan_ramowy_basic_authenticate');

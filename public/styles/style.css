@@ -42,7 +42,7 @@
 .conference-day-schedule th {
     background-color: #eeeeee;
     border-radius: 8px;
-    padding: 10px;
+    padding: 4px;
 }
 .conference-day-schedule th.wss-nb, .conference-day-schedule td.wss-nb {background-color: transparent}
 .conference-day-schedule th a,.conference-day-schedule td a{text-decoration: none;}
