@@ -253,3 +253,5 @@ footer.wp-block-template-part{
 .prelegent-custom-fields strong {
     font-weight: bold;
 }
+
+.single-kongres_prezentacja main .wp-block-template-part{display: none;}

@@ -57,20 +57,47 @@ function list_available_templates() {
     
     
 }
+
 function modify_kongres_prezentacja_content($content) {
     if (is_singular('kongres_prezentacja')) {
         $post_id = get_the_ID();
         $output = '<div class="container single-session">';
-        //$output .= '<h1>' . get_the_title() . '</h1>';
-        $output .= '<div class="session-details">';
         
+        // Dodanie tytułu sesji
+        //$output .= '<h1>' . get_the_title() . '</h1>';
+        
+        // Dodanie obrazka sesji
         if (has_post_thumbnail()) {
             $output .= get_the_post_thumbnail($post_id, 'large', ['loading' => 'lazy']);
         }
         
+        // Dodanie treści sesji
         $output .= '<div class="session-content">' . get_the_content() . '</div>';
+        
+        // Dodanie excerpt sesji
         $output .= '<div class="session-excerpt">' . get_the_excerpt() . '</div>';
         
+        // Pobieranie dodatkowych danych sesji
+        $start_time = get_post_meta($post_id, 'czas_start', true);
+        $end_time = get_post_meta($post_id, 'czas_zakonczenia', true);
+        $scena = get_post_meta($post_id, 'scena_ids', true);
+        $kongres_dzien = get_post_meta($post_id, 'kongres_dzien', true);
+        $date = get_the_title($kongres_dzien);
+        
+        // Wyświetlenie dodatkowych danych sesji
+        $output .= '<div class="session-details">';
+        if ($start_time && $end_time) {
+            $output .= '<p><strong>Godzina:</strong> ' . esc_html($start_time) . ' - ' . esc_html($end_time) . '</p>';
+        }
+        if ($scena) {
+            $output .= '<p><strong>Scena:</strong> ' . esc_html($scena[0]) . '</p>';
+        }
+        if ($date) {
+            $output .= '<p><strong>Data:</strong> ' . esc_html($date) . '</p>';
+        }
+        $output .= '</div>';
+        
+        // Wyświetlenie prelegentów
         $output .= '<div class="session-speakers">';
         $output .= '<h2>Prelegenci</h2>';
         $output .= '<ul>';
@@ -92,8 +119,8 @@ function modify_kongres_prezentacja_content($content) {
                 
                 $output .= '<li>';
                 $output .= $thumbnail;
-                $output .= '<div><h3>' .'<a href="' . esc_url($prelegent_link) . '">';
-                $output .=  esc_html($prelegent->post_title);
+                $output .= '<div><h3>' . '<a href="' . esc_url($prelegent_link) . '">';
+                $output .= esc_html($prelegent->post_title);
                 $output .= '</a>' . '</h3>';
                 $output .= '<p class="prelegent-excerpt">' . esc_html($excerpt) . '</p></div>';
                 $output .= '</li>';
@@ -104,7 +131,6 @@ function modify_kongres_prezentacja_content($content) {
         
         $output .= '</ul>';
         $output .= '</div>'; // .session-speakers
-        $output .= '</div>'; // .session-details
         $output .= '</div>'; // .container single-session
         
         return $output;
@@ -113,6 +139,7 @@ function modify_kongres_prezentacja_content($content) {
     return $content;
 }
 add_filter('the_content', 'modify_kongres_prezentacja_content');
+
 
 function remove_date_from_post( $the_date, $format, $post ) {
     if ( is_admin() ) {
