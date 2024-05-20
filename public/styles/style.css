@@ -113,3 +113,143 @@ footer.wp-block-template-part{
 .single-session .session-speakers ul li p {
     margin: 0;
 }
+
+.container.single-prelegent {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    gap: 20px;
+}
+
+.prelegent-image {
+    flex: 1 1 300px;
+    max-width: 300px;
+}
+
+.prelegent-image img {
+    width: 100%;
+    height: auto;
+}
+
+.prelegent-details {
+    flex: 2 1 600px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.prelegent-details h1 {
+    font-size: 2.5em;
+    margin: 0;
+}
+
+.prelegent-excerpt {
+    font-size: 1.2em;
+    color: #666;
+}
+
+.prelegent-content {
+    font-size: 1em;
+    line-height: 1.6;
+}
+
+.prelegent-custom-fields,
+.prelegent-sessions {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 5px;
+}
+
+.prelegent-custom-fields h2,
+.prelegent-sessions h2 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+
+.prelegent-custom-fields ul,
+.prelegent-sessions ul {
+    list-style: none;
+    padding: 0;
+}
+
+.prelegent-custom-fields li,
+.prelegent-sessions li {
+    margin-bottom: 10px;
+}
+
+.prelegent-sessions a {
+    color: #0073aa;
+    text-decoration: none;
+}
+
+.prelegent-sessions a:hover {
+    text-decoration: underline;
+}
+
+.container.archive-prelegent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.prelegent-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+}
+
+.prelegent-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 300px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    text-align: center;
+    background-color: #fff;
+}
+
+.prelegent-image {
+    width: 100%;
+    height: auto;
+    margin-bottom: 15px;
+}
+
+.prelegent-image img {
+    width: 100%;
+    height: auto;
+    border-radius: 50%;
+}
+
+.prelegent-details h2 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+}
+
+.prelegent-excerpt {
+    font-size: 1em;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.prelegent-custom-fields ul {
+    list-style: none;
+    padding: 0;
+}
+
+.prelegent-custom-fields li {
+    margin-bottom: 10px;
+}
+
+.prelegent-custom-fields strong {
+    font-weight: bold;
+}

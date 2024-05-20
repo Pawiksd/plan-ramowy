@@ -10,7 +10,7 @@ function load_single_template($template)
     
     return $template;
 }
-add_filter('single_template', 'load_single_template');
+//add_filter('single_template', 'load_single_template');
 
 // Redirect to the correct archive template
 function load_archive_template($template)
@@ -21,7 +21,7 @@ function load_archive_template($template)
     
     return $template;
 }
-add_filter('archive_template', 'load_archive_template');
+//add_filter('archive_template', 'load_archive_template');
 
 // Hook into the template_include filter
 //add_filter('template_include', 'load_custom_template_for_kongres_prezentacja');
@@ -61,7 +61,7 @@ function modify_kongres_prezentacja_content($content) {
     if (is_singular('kongres_prezentacja')) {
         $post_id = get_the_ID();
         $output = '<div class="container single-session">';
-        $output .= '<h1>' . get_the_title() . '</h1>';
+        //$output .= '<h1>' . get_the_title() . '</h1>';
         $output .= '<div class="session-details">';
         
         if (has_post_thumbnail()) {
@@ -78,7 +78,7 @@ function modify_kongres_prezentacja_content($content) {
         $prelegenci = get_post_meta($post_id, 'prelegenci', true);
         if (is_array($prelegenci) && !empty($prelegenci)) {
             $prelegenci_data = get_posts([
-                'post_type' => 'prelegent',
+                'post_type' => 'prelegenci',
                 'post__in' => $prelegenci,
                 'orderby' => 'post__in',
                 'posts_per_page' => -1
@@ -87,10 +87,15 @@ function modify_kongres_prezentacja_content($content) {
             foreach ($prelegenci_data as $prelegent) {
                 $thumbnail = get_the_post_thumbnail($prelegent->ID, 'thumbnail', ['loading' => 'lazy']);
                 $biografia = get_post_meta($prelegent->ID, 'biografia', true);
+                $excerpt = $prelegent->post_excerpt;
+                $prelegent_link = get_permalink($prelegent->ID);
+                
                 $output .= '<li>';
                 $output .= $thumbnail;
-                $output .= '<h3>' . esc_html($prelegent->post_title) . '</h3>';
-                $output .= '<p>' . esc_html($biografia) . '</p>';
+                $output .= '<div><h3>' .'<a href="' . esc_url($prelegent_link) . '">';
+                $output .=  esc_html($prelegent->post_title);
+                $output .= '</a>' . '</h3>';
+                $output .= '<p class="prelegent-excerpt">' . esc_html($excerpt) . '</p></div>';
                 $output .= '</li>';
             }
         } else {
@@ -108,3 +113,28 @@ function modify_kongres_prezentacja_content($content) {
     return $content;
 }
 add_filter('the_content', 'modify_kongres_prezentacja_content');
+
+function remove_date_from_post( $the_date, $format, $post ) {
+    if ( is_admin() ) {
+        return $the_date;
+    }
+    
+    if ( 'kongres_prezentacja' !== $post->post_type ) {
+        return $the_date;
+    }
+    return '';
+}
+
+function remove_time_from_post( $the_time, $format, $post ) {
+    if ( is_admin() ) {
+        return $the_time;
+    }
+    
+    if ( 'kongres_prezentacja' !== $post->post_type ) {
+        return $the_time;
+    }
+    return '';
+}
+
+add_filter( 'get_the_date', 'remove_date_from_post', 10, 3 );
+add_filter( 'get_the_time', 'remove_time_from_post', 10, 3 );
