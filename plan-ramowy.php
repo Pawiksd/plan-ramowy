@@ -17,7 +17,7 @@ include_once CONGRESS_PLUGIN_DIR . 'includes/cpt-speakers.php';
 
 // Include Meta Boxes
 include_once CONGRESS_PLUGIN_DIR . 'includes/meta-boxes.php';
-//include_once CONGRESS_PLUGIN_DIR . 'includes/option-page.php';
+include_once CONGRESS_PLUGIN_DIR . 'includes/option-page.php';
 include_once CONGRESS_PLUGIN_DIR . 'includes/shortcodes.php';
 include_once CONGRESS_PLUGIN_DIR . 'includes/hooks-filters.php';
 
@@ -34,6 +34,7 @@ add_action('wp_enqueue_scripts', 'pr_enqueue_scripts');
 
 function pr_load_custom_wp_admin_script() {
     wp_enqueue_script('jquery-ui-sortable');
+    wp_enqueue_media();
     wp_enqueue_style('select2-css', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css');
     wp_enqueue_script('select2-js', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.full.min.js', ['jquery'], null, true);
     wp_enqueue_script('custom-admin-js', plugin_dir_url(__FILE__) . 'admin/scripts/admin.js', ['jquery', 'jquery-ui-sortable', 'select2-js'], false, true);

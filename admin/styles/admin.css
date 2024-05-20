@@ -39,3 +39,34 @@
     cursor: pointer;
 }
 
+.wrap {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+h2 {
+    margin-top: 20px;
+}
+
+.end_page {
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background: #f9f9f9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.end_page img {
+    max-width: 400px !important;
+    height: auto;
+    margin-left: 10px;
+}
+
+.sortable-ghost {
+    opacity: 0.5;
+    background: #eee;
+}

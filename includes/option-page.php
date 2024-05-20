@@ -1,6 +1,5 @@
 <?php
 
-
 function plan_ramowy_settings_page()
 {
     add_menu_page(
@@ -16,68 +15,189 @@ function plan_ramowy_settings_page()
 
 add_action('admin_menu', 'plan_ramowy_settings_page');
 
-function plan_ramowy_settings_page_html()
-{
-    // Check user capability
+function register_plan_ramowy_settings() {
+    register_setting('plan_ramowy_settings_group', 'title_page_url');
+    register_setting('plan_ramowy_settings_group', 'end_pages_urls');
+}
+add_action('admin_init', 'register_plan_ramowy_settings');
+
+function handle_uploaded_files() {
+    if (isset($_POST['title_page'])) {
+        update_option('title_page_url', esc_url_raw($_POST['title_page']));
+    }
+
+    if (isset($_POST['end_pages'])) {
+        update_option('end_pages_urls', array_map('esc_url_raw', $_POST['end_pages']));
+    }
+}
+add_action('admin_post_update', 'handle_uploaded_files');
+
+function plan_ramowy_settings_page_html() {
     if (!current_user_can('manage_options')) {
         return;
     }
-    
-    // Save uploaded images
-    if (isset($_FILES['header_image']) && $_FILES['header_image']['error'] === UPLOAD_ERR_OK) {
-        $uploaded_header = wp_handle_upload($_FILES['header_image'], ['test_form' => false]);
-        if (!isset($uploaded_header['error'])) {
-            update_option('plan_ramowy_header_image', $uploaded_header['url']);
-        }
+
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        check_admin_referer('plan_ramowy_update_images', 'plan_ramowy_images_nonce');
+        handle_uploaded_files();
     }
-    
-    if (isset($_FILES['footer_image']) && $_FILES['footer_image']['error'] === UPLOAD_ERR_OK) {
-        $uploaded_footer = wp_handle_upload($_FILES['footer_image'], ['test_form' => false]);
-        if (!isset($uploaded_footer['error'])) {
-            update_option('plan_ramowy_footer_image', $uploaded_footer['url']);
-        }
-    }
-    
+
     echo '<div class="wrap">';
     echo '<h1>' . esc_html(get_admin_page_title()) . '</h1>';
-    
-    // Sprawdź, czy formularz został wysłany
+
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'generate_pdf') {
-        // Tutaj wywołujemy funkcję generującą PDF
         $pdf_path = generate_plan_ramowy_pdf();
         echo '<div class="updated"><p>PDF generated successfully. <a href="' . esc_url($pdf_path) . '">Download PDF</a></p></div>';
     }
-    
-    // Formularz do przesyłania obrazów i generowania PDF
     ?>
-    <form method="post" action="" enctype="multipart/form-data">
-        <?php
-        // Nonce field for security
-        wp_nonce_field('plan_ramowy_update_images', 'plan_ramowy_images_nonce');
-        ?>
-        <table class="form-table">
-            <tr>
-                <th scope="row"><label for="header_image">Header Image</label></th>
-                <td><input type="file" name="header_image" id="header_image" accept="image/png, image/jpeg"></td>
-            </tr>
-            <tr>
-                <th scope="row"><label for="footer_image">Footer Image</label></th>
-                <td><input type="file" name="footer_image" id="footer_image" accept="image/png, image/jpeg"></td>
-            </tr>
-        </table>
-        <?php submit_button('Upload Images'); ?>
+
+    <form method="post" action="">
+        <?php wp_nonce_field('plan_ramowy_update_images', 'plan_ramowy_images_nonce'); ?>
         
-        <table class="form-table">
-            <tr>
-                <th scope="row"><label for="header_image">Generuj PDF</label></th>
-                <td><input type="hidden" name="action" value="generate_pdf"></td>
-            </tr>
+        <h2>Strona Tytułowa</h2>
+        <button type="button" id="upload_title_page" class="button">Wybierz Stronę Tytułową</button>
+        <input type="hidden" name="title_page" id="title_page" value="<?php echo esc_url(get_option('title_page_url')); ?>">
+        <?php if (get_option('title_page_url')) : ?>
+            <div>
+                <img src="<?php echo get_option('title_page_url'); ?>" alt="Title Page" style="max-width: 100%; height: auto;">
+            </div>
+        <?php endif; ?>
         
-        </table>
+        <h2>Strony Końcowe</h2>
+        <div id="end_pages_container" class="sortable">
+            <button type="button" id="add_end_page" class="button">Dodaj Stronę Końcową</button>
+            <?php
+            $end_pages = get_option('end_pages_urls', []);
+            if (!empty($end_pages)) {
+                foreach ($end_pages as $index => $url) {
+                    echo '<div class="end_page">';
+                    echo '<button type="button" class="remove_end_page button">Usuń</button>';
+                    echo '<button type="button" class="upload_end_page button">Wybierz Stronę Końcową</button>';
+                    echo '<input type="hidden" name="end_pages[]" value="' . esc_url($url) . '">';
+                    echo '<img src="' . esc_url($url) . '" alt="End Page ' . ($index + 1) . '" style="max-width: 100%; height: auto;">';
+                    echo '</div>';
+                }
+            }
+            ?>
+        </div>
+        
+        <?php submit_button('Zapisz Ustawienia'); ?>
+        
+        <h2>Generuj PDF</h2>
+        <input type="hidden" name="action" value="generate_pdf">
         <?php submit_button('Generate PDF'); ?>
-    </form></div>
+    </form>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const titlePageButton = document.getElementById('upload_title_page');
+        const titlePageInput = document.getElementById('title_page');
+
+        titlePageButton.addEventListener('click', function () {
+          wp.media.editor.send.attachment = function (props, attachment) {
+            titlePageInput.value = attachment.url;
+            const img = document.querySelector('img[alt="Title Page"]');
+            if (img) {
+              img.src = attachment.url;
+            } else {
+              const newImg = document.createElement('img');
+              newImg.src = attachment.url;
+              newImg.alt = 'Title Page';
+              newImg.style.maxWidth = '100%';
+              newImg.style.height = 'auto';
+              titlePageButton.insertAdjacentElement('afterend', newImg);
+            }
+          };
+          wp.media.editor.open(titlePageButton);
+          return false;
+        });
+
+        const endPagesContainer = document.getElementById('end_pages_container');
+
+        document.getElementById('add_end_page').addEventListener('click', function () {
+          const endPageDiv = document.createElement('div');
+          endPageDiv.className = 'end_page';
+
+          const removeButton = document.createElement('button');
+          removeButton.type = 'button';
+          removeButton.className = 'remove_end_page button';
+          removeButton.textContent = 'Usuń';
+
+          const uploadButton = document.createElement('button');
+          uploadButton.type = 'button';
+          uploadButton.className = 'upload_end_page button';
+          uploadButton.textContent = 'Wybierz Stronę Końcową';
+
+          const hiddenInput = document.createElement('input');
+          hiddenInput.type = 'hidden';
+          hiddenInput.name = 'end_pages[]';
+
+          endPageDiv.appendChild(removeButton);
+          endPageDiv.appendChild(uploadButton);
+          endPageDiv.appendChild(hiddenInput);
+          endPagesContainer.appendChild(endPageDiv);
+
+          uploadButton.addEventListener('click', function () {
+            wp.media.editor.send.attachment = function (props, attachment) {
+              hiddenInput.value = attachment.url;
+              let img = endPageDiv.querySelector('img');
+              if (img) {
+                img.src = attachment.url;
+              } else {
+                img = document.createElement('img');
+                img.src = attachment.url;
+                img.style.maxWidth = '100%';
+                img.style.height = 'auto';
+                endPageDiv.appendChild(img);
+              }
+            };
+            wp.media.editor.open(uploadButton);
+            return false;
+          });
+
+          removeButton.addEventListener('click', function () {
+            endPageDiv.remove();
+          });
+        });
+
+        document.querySelectorAll('.upload_end_page').forEach(function (button) {
+          button.addEventListener('click', function () {
+            const hiddenInput = button.nextElementSibling;
+            wp.media.editor.send.attachment = function (props, attachment) {
+              hiddenInput.value = attachment.url;
+              let img = button.parentNode.querySelector('img');
+              if (img) {
+                img.src = attachment.url;
+              } else {
+                img = document.createElement('img');
+                img.style.maxWidth = '100%';
+                img.style.height = 'auto';
+                img.src = attachment.url;
+                button.parentNode.appendChild(img);
+              }
+            };
+            wp.media.editor.open(button);
+            return false;
+          });
+        });
+
+        document.querySelectorAll('.remove_end_page').forEach(function (button) {
+          button.addEventListener('click', function () {
+            button.parentNode.remove();
+          });
+        });
+
+        jQuery('#end_pages_container').sortable({
+          animation: 150,
+          ghostClass: 'sortable-ghost',
+        });
+      });
+
+    </script>
     <?php
 }
+
 
 
 function generate_plan_ramowy_pdf()
