@@ -5,6 +5,7 @@ get_header();
 
 ?>
 <style>
+    body{background-color: #fff !important;}
     .gdpr.gdpr-privacy-bar, #header, #footer{display: none !important;}
     body.page-template-conference-schedule header,
     body.page-template-conference-schedule .site-header {
@@ -23,6 +24,8 @@ get_header();
         object-fit: contain;
         text-align: center;
     }
+    
+    
     
 </style>
     <div id="page" class="conference-schedule-content">

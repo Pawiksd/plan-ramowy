@@ -48,7 +48,7 @@ function conference_schedule_shortcode()
 
         $output .= '<thead>';
         $output .= '<tr><th scope="col" class="wss-nb" colspan="' . (count($sceny) + 1) . '"><strong>Dzień: ' . get_the_title($dzien->ID) . '</strong></th></tr>';
-        $output .= '<tr><th scope="col" id="pr-godzina" class="wss-nb">Godzina</th>';
+        $output .= '<tr><th scope="col" id="pr-godzina" class="wss-nb"></th>';
         foreach ($sceny as $scena) {
             $scene_name = get_post_meta($dzien->ID, 'scene_name_' . $scena->ID, true) ?: get_the_title($scena->ID);
             $scene_text_color = get_post_meta($dzien->ID, 'scene_text_color_' . $scena->ID, true) ?: '#000';
