@@ -6,7 +6,7 @@ get_header();
 ?>
 <style>
     body{background-color: #fff !important;}
-    .gdpr.gdpr-privacy-bar, #header, #footer{display: none !important;}
+    .gdpr.gdpr-privacy-bar, #header, #footer, .a11y-non-responsive.a11y-toolbar {display: none !important;}
     body.page-template-conference-schedule header,
     body.page-template-conference-schedule .site-header {
         display: none;
