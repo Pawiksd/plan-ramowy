@@ -242,9 +242,10 @@ function plan_ramowy_settings_page_html()
     <?php
 }
 
-function generate_pdf_request()
+function generate_pdf_request($int = false)
 {
-    if (isset($_POST['action']) && $_POST['action'] === 'generate_pdf') {
+    
+    if ((isset($_POST['action']) && $_POST['action'] === 'generate_pdf') || $int) {
         $url = 'https://kongres.wpdevelopers.eu/conference-schedule/';
         $username = 'your_username'; // Replace with actual username
         $password = 'your_password'; // Replace with actual password

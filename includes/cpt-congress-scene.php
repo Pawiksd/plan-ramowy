@@ -1,25 +1,38 @@
 <?php
-function register_congress_scene_cpt()
-{
-    register_post_type('kongres_scena', [
-        'labels' => [
-            'name' => 'Sceny Kongresu',
-            'singular_name' => 'Scena Kongresu',
-            'add_new' => 'Dodaj Nową Scenę',
-            'add_new_item' => 'Dodaj Nową Scenę Kongresu',
-            'edit_item' => 'Edytuj Scenę Kongresu',
-            'new_item' => 'Nowa Scena Kongresu',
-            'view_item' => 'Zobacz Scenę Kongresu',
-            'search_items' => 'Szukaj Scen Kongresu',
-            'not_found' => 'Nie znaleziono Scen Kongresu',
-            'not_found_in_trash' => 'Nie znaleziono Scen Kongresu w koszu'
-        ],
-        'public' => true,
-        'has_archive' => true,
-        'supports' => ['title', 'editor'],
+function register_kongres_scena_cpt() {
+    $labels = array(
+        'name'               => 'Sceny',
+        'singular_name'      => 'Scena',
+        'menu_name'          => 'Sceny',
+        'name_admin_bar'     => 'Scena',
+        'add_new'            => 'Dodaj nową',
+        'add_new_item'       => 'Dodaj nową scenę',
+        'new_item'           => 'Nowa scena',
+        'edit_item'          => 'Edytuj scenę',
+        'view_item'          => 'Zobacz scenę',
+        'all_items'          => 'Wszystkie sceny',
+        'search_items'       => 'Szukaj scen',
+        'parent_item_colon'  => 'Scena nadrzędna:',
+        'not_found'          => 'Nie znaleziono scen',
+        'not_found_in_trash' => 'Nie znaleziono scen w koszu'
+    );
+
+    $args = array(
+        'labels'             => $labels,
+        'public'             => true,
+        'publicly_queryable' => true,
+        'show_ui'            => true,
+        'show_in_menu'       => true,
+        'query_var'          => true,
+        'rewrite'            => array('slug' => 'scena', 'with_front' => false),
+        'capability_type'    => 'post',
+        'has_archive'        => true,
+        'hierarchical'       => false,
         'menu_position' => 5,
-        'show_in_rest' => true
-    ]);
+        'supports'           => array('title', 'editor', 'author', 'thumbnail', 'excerpt', 'comments')
+    );
+
+    register_post_type('kongres_scena', $args);
 }
 
-add_action('init', 'register_congress_scene_cpt');
+add_action('init', 'register_kongres_scena_cpt');

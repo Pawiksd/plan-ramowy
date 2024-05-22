@@ -202,3 +202,72 @@ function plan_ramowy_basic_authenticate() {
     }
 }
 add_action('template_redirect', 'plan_ramowy_basic_authenticate');
+
+
+function display_custom_fields_and_sessions($content) {
+    if (is_singular('kongres_scena')) {
+        global $post;
+
+        // Dodaj wszystkie pola niestandardowe
+      /*  $custom_fields = get_post_custom($post->ID);
+        if (!empty($custom_fields)) {
+            $content .= '<h3>Custom Fields</h3><ul>';
+            foreach ($custom_fields as $key => $value) {
+                $content .= '<li><strong>' . esc_html($key) . ':</strong> ' . esc_html(implode(', ', $value)) . '</li>';
+            }
+            $content .= '</ul>';
+        }*/
+
+        // Sprawdź, czy parametr `day` jest ustawiony w URL
+        if (isset($_GET['kd'])) {
+            $day_id = intval($_GET['kd']);
+            
+            // Pobierz sesje związane z tą sceną i dniem
+            $args = array(
+                'post_type' => 'kongres_prezentacja',
+                'meta_query' => array(
+                    array(
+                        'key' => 'scena_ids',
+                        'value' => $post->ID,
+                        'compare' => 'LIKE'
+                    ),
+                    array(
+                        'key' => 'presentation_day_id',
+                        'value' => $day_id,
+                        'compare' => '='
+                    )
+                )
+            );
+            $query = new WP_Query($args);
+            
+            if ($query->have_posts()) {
+                $content .= '<h3>Sesje na tej scenie w wybranym dniu</h3><ul>';
+                while ($query->have_posts()) {
+                    $query->the_post();
+                    $content .= '<li><a href="' . get_permalink() . '">' . get_the_title() . '</a></li>';
+                }
+                $content .= '</ul>';
+            } else {
+                $content .= '<p>Brak sesji na tej scenie w wybranym dniu.</p>';
+            }
+            
+            wp_reset_postdata();
+        }
+    }
+    
+    return $content;
+}
+add_filter('the_content', 'display_custom_fields_and_sessions');
+
+// Funkcja do uruchamiania generowania PDF przy zapisywaniu/aktualizowaniu postów
+function trigger_pdf_generation_on_save($post_id, $post, $update) {
+    // Sprawdź, czy jest to zapis/aktualizacja postów typu kongres_dzien, kongres_scena lub kongres_prezentacja
+    if (in_array($post->post_type, array('kongres_dzien', 'kongres_scena', 'kongres_prezentacja'))) {
+        /*
+         * ToDo: Check for new event creation
+         * */
+        // Wywołaj AJAX do generowania PDF
+        generate_pdf_request(true);
+    }
+}
+add_action('save_post', 'trigger_pdf_generation_on_save', 10, 3);
