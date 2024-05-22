@@ -10,6 +10,7 @@
 define('CONGRESS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 
 // Include Custom Post Types
+include_once CONGRESS_PLUGIN_DIR . 'includes/functions.php';
 include_once CONGRESS_PLUGIN_DIR . 'includes/cpt-congress-day.php';
 include_once CONGRESS_PLUGIN_DIR . 'includes/cpt-congress-scene.php';
 include_once CONGRESS_PLUGIN_DIR . 'includes/cpt-congress-presentation.php';

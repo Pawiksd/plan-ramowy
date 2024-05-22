@@ -81,7 +81,7 @@ function modify_kongres_prezentacja_content($content) {
         $start_time = get_post_meta($post_id, 'czas_start', true);
         $end_time = get_post_meta($post_id, 'czas_zakonczenia', true);
         $scena = get_post_meta($post_id, 'scena_ids', true);
-        $kongres_dzien = get_post_meta($post_id, 'kongres_dzien', true);
+        $kongres_dzien = get_post_meta($post_id, 'presentation_day_id', true);
         $date = get_the_title($kongres_dzien);
         
         // Wyświetlenie dodatkowych danych sesji
@@ -90,7 +90,12 @@ function modify_kongres_prezentacja_content($content) {
             $output .= '<p><strong>Godzina:</strong> ' . esc_html($start_time) . ' - ' . esc_html($end_time) . '</p>';
         }
         if ($scena) {
-            $output .= '<p><strong>Scena:</strong> ' . esc_html($scena[0]) . '</p>';
+            $output .= '<p><strong>Scena:</strong> ';
+            foreach($scena as $scena_id){
+                $output .= get_the_title($scena_id).', ';
+            }
+            $output = substr($output, 0, -2);
+            $output .=  '</p>';
         }
         if ($date) {
             $output .= '<p><strong>Data:</strong> ' . esc_html($date) . '</p>';
