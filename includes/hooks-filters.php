@@ -59,7 +59,9 @@ function list_available_templates() {
 }
 
 function modify_kongres_prezentacja_content($content) {
+    
     if (is_singular('kongres_prezentacja')) {
+        
         $post_id = get_the_ID();
         $output = '<div class="container single-session">';
         
@@ -71,18 +73,20 @@ function modify_kongres_prezentacja_content($content) {
             $output .= get_the_post_thumbnail($post_id, 'large', ['loading' => 'lazy']);
         }
         
+        
+        
         // Dodanie treści sesji
         $output .= '<div class="session-content">' . get_the_content() . '</div>';
         
         // Dodanie excerpt sesji
-        $output .= '<div class="session-excerpt">' . get_the_excerpt() . '</div>';
-        
-        // Pobieranie dodatkowych danych sesji
+        //$output .= '<div class="session-excerpt">' . get_the_excerpt() . '</div>';
+
+// Pobieranie dodatkowych danych sesji
         $start_time = get_post_meta($post_id, 'czas_start', true);
         $end_time = get_post_meta($post_id, 'czas_zakonczenia', true);
         $scena = get_post_meta($post_id, 'scena_ids', true);
         $kongres_dzien = get_post_meta($post_id, 'presentation_day_id', true);
-        $date = get_the_title($kongres_dzien);
+        $date = get_post_title_by_id($kongres_dzien);
         
         // Wyświetlenie dodatkowych danych sesji
         $output .= '<div class="session-details">';
@@ -92,7 +96,7 @@ function modify_kongres_prezentacja_content($content) {
         if ($scena) {
             $output .= '<p><strong>Scena:</strong> ';
             foreach($scena as $scena_id){
-                $output .= get_the_title($scena_id).', ';
+                $output .= get_post_title_by_id($scena_id).', ';
             }
             $output = substr($output, 0, -2);
             $output .=  '</p>';

@@ -22,6 +22,14 @@ function conference_schedule_shortcode()
     $activePresentations = [];
     //$output = '<div id="plan-ramowy" aria-describedby="conference-schedule">';
     $output = '';
+    
+    $upload_dir = wp_upload_dir();
+    $pdf_url = $upload_dir['baseurl'] . '/program-ramowy.pdf';
+    if (file_exists($upload_dir['basedir'] . '/program-ramowy.pdf')) {
+        $output .= '<div style="text-align: center;"><a href="' . esc_url($pdf_url) . '" download="program-ramowy.pdf" class="button">Pobierz Program</a></div>';
+    }
+
+    
     //$output .= '<caption>Plan Ramowy</caption>';
 
     foreach ($dni as $dzien) {
@@ -58,7 +66,7 @@ function conference_schedule_shortcode()
                 $scene_text_size .= 'px';
             }
             $scene_style = 'style="font-size:' . esc_attr($scene_text_size) . ';background-color:' . esc_attr($scene_bg_color) . ';"';
-            $scene_link = get_permalink($scena->ID) . '?day=' . $dzien->ID;
+            $scene_link = get_permalink($scena->ID) . '?kd=' . $dzien->ID;
             $output .= '<th scope="col" ' . $scene_style . '><a href="' . esc_url($scene_link) . '" style="color:' . esc_attr($scene_text_color) . ';">' . esc_html($scene_name) . '</a></th>';
         }
         $output .= '</tr></thead>';
@@ -86,12 +94,15 @@ function conference_schedule_shortcode()
                     $text_color = get_post_meta($prezentacja->ID, 'text_color', true);
                     $style = 'style="background-color:' . esc_attr($bg_color) . ';color:' . esc_attr($text_color) . '; border-radius: 10px; border: 3px solid ' . esc_attr($border_color) . ';"';
 
-                    $prelegenci = get_post_meta($prezentacja->ID, 'prelegenci', true)?:[];
+                    $prelegenci = get_post_meta($prezentacja->ID, 'prelegenci', true) ?: [];
                     $prelegenci_names = array_map('get_the_title', $prelegenci);
+                    $czas_start = get_post_meta($prezentacja->ID, 'czas_start', true);
+                    $czas_zakonczenia = get_post_meta($prezentacja->ID, 'czas_zakonczenia', true);
                     $tooltip_content = sprintf(
-                        'Dzień: %s<br>Godzina: %s<br>Scena: %s<br>Prelegenci: %s<br>Podsumowanie: %s',
+                        'Dzień: %s<br>Godzina: %s - %s<br>Scena: %s<br>Prelegenci: %s<br>Podsumowanie: %s',
                         get_the_title($dzien->ID),
-                        $timeslot,
+                        $czas_start,
+                        $czas_zakonczenia,
                         get_post_meta($dzien->ID, 'scene_name_' . $scena->ID, true) ?: get_the_title($scena->ID),
                         implode(', ', $prelegenci_names),
                         esc_html(get_the_excerpt($prezentacja->ID))

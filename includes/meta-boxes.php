@@ -83,7 +83,8 @@ function congress_day_scenes_meta_box_callback($post)
     
     $sceny = get_posts(['post_type' => 'kongres_scena', 'numberposts' => -1, 'orderby' => 'ID', 'order' => 'ASC']);
     
-    echo '<ul id="scene_order">';
+    echo '<ul id="scene_order" style="width: 500px;margin-left: 100px;">';
+    echo '<li><span style="width: 30px;">&nbsp;</span><span style="width: 180px;">Nazwa</span><span style="width: 50px;">Kolor Tła</span><span style="width: 50px;">Kolor Tekstu</span><span>Rozmiar Tekstu (px)</span></li>';
     foreach ($sceny as $scena) {
         $scene_name = get_post_meta($post->ID, 'scene_name_' . $scena->ID, true);
         $bg_color = get_post_meta($post->ID, 'scene_bg_color_' . $scena->ID, true);

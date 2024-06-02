@@ -255,3 +255,7 @@ footer.wp-block-template-part{
 }
 
 .single-kongres_prezentacja main .wp-block-template-part{display: none;}
+
+.session-content{
+    word-break: break-word;
+}
