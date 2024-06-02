@@ -90,6 +90,9 @@ function modify_kongres_prezentacja_content($content) {
         
         // Wyświetlenie dodatkowych danych sesji
         $output .= '<div class="session-details">';
+        if ($date) {
+            $output .= '<p><strong>Data:</strong> ' . esc_html($date) . '</p>';
+        }
         if ($start_time && $end_time) {
             $output .= '<p><strong>Godzina:</strong> ' . esc_html($start_time) . ' - ' . esc_html($end_time) . '</p>';
         }
@@ -101,18 +104,19 @@ function modify_kongres_prezentacja_content($content) {
             $output = substr($output, 0, -2);
             $output .=  '</p>';
         }
-        if ($date) {
-            $output .= '<p><strong>Data:</strong> ' . esc_html($date) . '</p>';
-        }
+
         $output .= '</div>';
-        
-        // Wyświetlenie prelegentów
-        $output .= '<div class="session-speakers">';
-        $output .= '<h2>Prelegenci</h2>';
-        $output .= '<ul>';
-        
+
         $prelegenci = get_post_meta($post_id, 'prelegenci', true);
         if (is_array($prelegenci) && !empty($prelegenci)) {
+            
+            
+            // Wyświetlenie prelegentów
+            $output .= '<div class="session-speakers">';
+            $output .= '<h2>Prelegenci</h2>';
+            $output .= '<ul>';
+            
+            
             $prelegenci_data = get_posts([
                 'post_type' => 'prelegenci',
                 'post__in' => $prelegenci,
@@ -134,14 +138,13 @@ function modify_kongres_prezentacja_content($content) {
                 $output .= '<p class="prelegent-excerpt">' . esc_html($excerpt) . '</p></div>';
                 $output .= '</li>';
             }
-        } else {
-            $output .= '<li>Brak prelegentów przypisanych do tej sesji.</li>';
+            
+            $output .= '</ul>';
+            $output .= '</div>'; // .session-speakers
+            $output .= '</div>'; // .container single-session
+            
         }
-        
-        $output .= '</ul>';
-        $output .= '</div>'; // .session-speakers
-        $output .= '</div>'; // .container single-session
-        
+    
         return $output;
     }
     
@@ -149,31 +152,72 @@ function modify_kongres_prezentacja_content($content) {
 }
 add_filter('the_content', 'modify_kongres_prezentacja_content');
 
+function remove_date_and_author($content) {
+    // Wyrażenie regularne do usunięcia daty (dostosuj do swojego formatu daty)
+    $content = preg_replace('/<div class="wp-block-post-date">.*?<\/div>/', '', $content);
+    /*var_dump($content);
+    exit;*/
+    
+    // Wyrażenie regularne do usunięcia autora (dostosuj do swojego formatu autora)
+    $content = preg_replace('/<p class="post-author">.*?<\/p>/', '', $content);
+    
+    return $content;
+}
+
 
 function remove_date_from_post( $the_date, $format, $post ) {
     if ( is_admin() ) {
         return $the_date;
     }
     
-    if ( 'kongres_prezentacja' !== $post->post_type ) {
-        return $the_date;
-    }
-    return '';
-}
-
-function remove_time_from_post( $the_time, $format, $post ) {
-    if ( is_admin() ) {
-        return $the_time;
+    switch ($post->post_type) {
+        case 'kongres_prezentacja':
+        case 'prelegenci':
+        case 'kongres_scena':
+        case 'kongres_dzien':
+            return '';
+        default:
+            return $the_date;
     }
     
-    if ( 'kongres_prezentacja' !== $post->post_type ) {
-        return $the_time;
-    }
-    return '';
 }
 
-add_filter( 'get_the_date', 'remove_date_from_post', 10, 3 );
-add_filter( 'get_the_time', 'remove_time_from_post', 10, 3 );
+add_filter('the_author', 'remove_kongres_prezentacja_author');
+function remove_kongres_prezentacja_author($author) {
+    switch (get_post_type()) {
+        case 'kongres_prezentacja':
+        case 'prelegenci':
+            return '';
+        default:
+            return $author;
+    }
+}
+
+
+//add_filter( 'get_the_date', 'remove_date_from_post', 10, 3 );
+
+add_filter('rest_prepare_post', 'remove_date_author_from_rest', 10, 3);
+function remove_date_author_from_rest($data, $post, $context) {
+    switch ($post->post_type) {
+        case 'kongres_prezentacja':
+        case 'prelegenci':
+            unset($data->data['date']);
+            unset($data->data['author']);
+            break;
+    }
+    return $data;
+}
+
+// Dodaj akcję do wczytania skryptu w edytorze bloków
+add_action('enqueue_block_editor_assets', 'enqueue_gutenberg_custom_script');
+function enqueue_gutenberg_custom_script() {
+    wp_enqueue_script(
+        'custom-gutenberg-script',
+        plugins_url('gutenberg-custom-script.js', __FILE__),
+        array('wp-blocks', 'wp-element', 'wp-edit-post'),
+        filemtime(plugin_dir_path(__FILE__) . 'gutenberg-custom-script.js')
+    );
+}
 
 function plan_ramowy_register_endpoints() {
     add_rewrite_rule('^conference-schedule$', 'index.php?conference_schedule=true', 'top');
@@ -250,7 +294,7 @@ function display_custom_fields_and_sessions($content) {
             $query = new WP_Query($args);
             
             if ($query->have_posts()) {
-                $content .= '<h3>Sesje na tej scenie w wybranym dniu</h3><ul>';
+                $content .= '<h3>Sesje na tej scenie w wybranym dniu:</h3><ul>';
                 while ($query->have_posts()) {
                     $query->the_post();
                     $content .= '<li><a href="' . get_permalink() . '">' . get_the_title() . '</a></li>';

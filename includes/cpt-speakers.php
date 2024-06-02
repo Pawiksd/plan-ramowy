@@ -17,7 +17,7 @@ function register_speakers_post_type()
         'public' => true,
         'has_archive' => true,
         'rewrite' => ['slug' => 'prelegenci', 'with_front' => false],
-        'supports' => ['title', 'editor','excerpt'],
+        'supports' => ['title', 'editor','excerpt','thumbnail'],
         'menu_position' => 5,
         'show_in_rest' => true
     ]);
@@ -41,16 +41,7 @@ function register_speakers_post_type()
                     'maxlength' => '',
                     'rows' => '',
                     'formatting' => 'br',
-                ],
-                [
-                    'key' => 'field_5a7b9a8c1d8e0',
-                    'label' => 'Image',
-                    'name' => 'image',
-                    'type' => 'image',
-                    'save_format' => 'id',
-                    'preview_size' => 'thumbnail',
-                    'library' => 'all',
-                ],
+                ]
             ],
             'location' => [
                 [
@@ -80,19 +71,19 @@ function modify_prelegenci_content($content) {
         $output .= '<div class="prelegent-details">';
         //$output .= '<h1>' . get_the_title() . '</h1>';
         
-        // Dodanie excerpt prelegenta
-        $output .= '<div class="prelegent-excerpt">' . get_the_excerpt() . '</div>';
-        
         // Dodanie treści prelegenta
         $output .= '<div class="prelegent-content">' . get_the_content() . '</div>';
+        
+        // Dodanie excerpt prelegenta
+        //$output .= '<div class="prelegent-excerpt">' . get_the_excerpt() . '</div>';
         
         // Wyświetlenie wszystkich custom fields
         $custom_fields = get_post_custom($post_id);
         if (!empty($custom_fields)) {
             $output .= '<div class="prelegent-custom-fields"><h2>Dodatkowe informacje</h2><ul>';
             foreach ($custom_fields as $key => $value) {
-                if (!is_protected_meta($key)) {
-                    $output .= '<li><strong>' . esc_html($key) . ':</strong> ' . esc_html(implode(', ', $value)) . '</li>';
+                if (!is_protected_meta($key) && $key!='image') {
+                    $output .= '<li>' . esc_html(implode(', ', $value)) . '</li>';
                 }
             }
             $output .= '</ul></div>';
@@ -127,6 +118,8 @@ function modify_prelegenci_content($content) {
         $output .= '</div>'; // .prelegent-sessions
         $output .= '</div>'; // .prelegent-details
         $output .= '</div>'; // .container single-prelegent
+        
+        $output = remove_date_and_author($output);
         
         return $output;
     }

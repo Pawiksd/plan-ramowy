@@ -24,7 +24,7 @@ echo '<table id="plan-ramowy1" aria-describedby="conference-schedule">';
 echo '<caption>Plan Ramowy</caption>';
 foreach ($dni as $dzien) {
     echo '<thead>';
-    echo '<tr><th scope="col" class="wss-nb" colspan="' . (count($sceny) + 1) . '"><strong>Dzień: ' . get_the_title($dzien->ID) . '</strong></th></tr>';
+    echo '<tr><th scope="col" class="wss-nb" colspan="' . (count($sceny) + 1) . '"><strong>' . get_the_title($dzien->ID) . '</strong></th></tr>';
     echo '<tr><th scope="col" id="pr-godzina" class="wss-nb">Godzina</th>';
     foreach ($sceny as $scena) {
         echo '<th scope="col">' . esc_html(get_the_title($scena->ID)) . '</th>';

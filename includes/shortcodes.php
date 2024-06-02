@@ -55,7 +55,7 @@ function conference_schedule_shortcode()
         $timeslots = calculate_timeslots($presentations);
 
         $output .= '<thead>';
-        $output .= '<tr><th scope="col" class="wss-nb" colspan="' . (count($sceny) + 1) . '"><strong>Dzień: ' . get_the_title($dzien->ID) . '</strong></th></tr>';
+        $output .= '<tr><th scope="col" class="wss-nb" colspan="' . (count($sceny) + 1) . '"><strong>' . get_the_title($dzien->ID) . '</strong></th></tr>';
         $output .= '<tr><th scope="col" id="pr-godzina" class="wss-nb"></th>';
         foreach ($sceny as $scena) {
             $scene_name = get_post_meta($dzien->ID, 'scene_name_' . $scena->ID, true) ?: get_the_title($scena->ID);
@@ -108,7 +108,7 @@ function conference_schedule_shortcode()
                         esc_html(get_the_excerpt($prezentacja->ID))
                     );
 
-                    $output .= '<td scope="cell" class="wss-nb" colspan="' . $colspan . '" rowspan="' . $rowspan . '" data-tooltip="' . esc_attr($tooltip_content) . '">';
+                    $output .= '<td scope="cell" class="wss-nb" colspan="' . $colspan . '" rowspan="' . $rowspan . '" data-tooltip-url="'.get_permalink($prezentacja->ID).'" data-tooltip="' . esc_attr($tooltip_content) . '">';
                     $output .= '<div ' . $style . '>';
                     $output .= '<a href="' . get_permalink($prezentacja->ID) . '">' . get_the_title($prezentacja->ID) . '</a>';
                     $output .= '</div></td>';

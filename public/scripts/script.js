@@ -29,5 +29,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 300); // Czas powinien odpowiadać czasowi trwania animacji CSS
       });
     });
+
+    // Dodanie event listenera click
+    cell.addEventListener('click', function() {
+      const url = this.getAttribute('data-tooltip-url');
+      if (url) {
+        window.location.href = url;
+      } else {
+        console.error('Element nie posiada atrybutu data-tooltip-url');
+      }
+    });
   });
 });
