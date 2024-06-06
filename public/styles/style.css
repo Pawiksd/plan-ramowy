@@ -1,4 +1,18 @@
-.conference-day-schedule{width:100%;border-collapse: separate;border-spacing: 10px;}
+.conference-day-schedule {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 3px;
+}
+
+@media (min-width: 1200px) {
+    .conference-day-schedule {
+        max-width: 1200px;
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 3px;
+    }
+}
+
 .conference-day-schedule tr{}
 .conference-day-schedule th, .conference-day-schedule td {
     padding: 0;
@@ -258,4 +272,56 @@ footer.wp-block-template-part{
 
 .session-content{
     word-break: break-word;
+}
+
+
+/* Stylizacja dla urządzeń mobilnych */
+@media (max-width: 768px) {
+    .conference-day-schedule {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .conference-day-schedule thead {
+        display: none; /* Ukryj nagłówki tabeli */
+    }
+
+    .conference-day-schedule tbody,
+    .conference-day-schedule tr,
+    .conference-day-schedule td,
+    .conference-day-schedule th {
+        display: block;
+        width: 100%;
+    }
+
+    .conference-day-schedule tr {
+        margin-bottom: 10px;
+        border: 1px solid #ddd;
+    }
+
+    .conference-day-schedule td, .conference-day-schedule th {
+        text-align: left;
+        height: auto;
+        position: relative;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+
+    .conference-day-schedule th:first-child, .conference-day-schedule td:first-child {
+        /*  display: none;  Ukryj pierwszą kolumnę */
+    }
+
+    .conference-day-schedule td::before, .conference-day-schedule th::before {
+        content: attr(data-label);
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        width: calc(50% - 20px);
+        white-space: nowrap;
+        text-align: left;
+        font-weight: bold;
+    }
+
+    .conference-day-schedule td, .conference-day-schedule th {
+    }
 }

@@ -1,62 +1,4 @@
 <?php
-// Redirect to the correct single template
-function load_single_template($template)
-{
-    global $post;
-    
-    if ($post->post_type == 'prelegenci') {
-        $template = plugin_dir_path(__FILE__) . '../public/templates/single-prelegenci.php';
-    }
-    
-    return $template;
-}
-//add_filter('single_template', 'load_single_template');
-
-// Redirect to the correct archive template
-function load_archive_template($template)
-{
-    if (is_post_type_archive('prelegenci')) {
-        $template = plugin_dir_path(__FILE__) . '../public/templates/archive-prelegenci.php';
-    }
-    
-    return $template;
-}
-//add_filter('archive_template', 'load_archive_template');
-
-// Hook into the template_include filter
-//add_filter('template_include', 'load_custom_template_for_kongres_prezentacja');
-
-// Function to load the custom template
-function load_custom_template_for_kongres_prezentacja($template) {
-    if (is_singular('kongres_prezentacja')) {
-        // Check if the custom template file exists in the theme
-        $custom_template = locate_template('single-kongres_prezentacja.php');
-        
-        // If the custom template file exists, use it
-        if ($custom_template) {
-            return $custom_template;
-        } else {
-            // If the custom template file doesn't exist in the theme, use the plugin's template
-            return plugin_dir_path(__FILE__) . '../public/templates/single-kongres_prezentacja.php';
-        }
-    }
-    return $template;
-}
-
-
-//add_action('admin_init', 'list_available_templates');
-
-function list_available_templates() {
-    if (current_user_can('manage_options')) {
-        $templates = get_block_templates([], 'wp_template_part');
-        echo '<pre>';
-        print_r($templates);
-        echo '</pre>';
-        //exit;
-    }
-    
-    
-}
 
 function modify_kongres_prezentacja_content($content) {
     
@@ -152,73 +94,6 @@ function modify_kongres_prezentacja_content($content) {
 }
 add_filter('the_content', 'modify_kongres_prezentacja_content');
 
-function remove_date_and_author($content) {
-    // Wyrażenie regularne do usunięcia daty (dostosuj do swojego formatu daty)
-    $content = preg_replace('/<div class="wp-block-post-date">.*?<\/div>/', '', $content);
-    /*var_dump($content);
-    exit;*/
-    
-    // Wyrażenie regularne do usunięcia autora (dostosuj do swojego formatu autora)
-    $content = preg_replace('/<p class="post-author">.*?<\/p>/', '', $content);
-    
-    return $content;
-}
-
-
-function remove_date_from_post( $the_date, $format, $post ) {
-    if ( is_admin() ) {
-        return $the_date;
-    }
-    
-    switch ($post->post_type) {
-        case 'kongres_prezentacja':
-        case 'prelegenci':
-        case 'kongres_scena':
-        case 'kongres_dzien':
-            return '';
-        default:
-            return $the_date;
-    }
-    
-}
-
-add_filter('the_author', 'remove_kongres_prezentacja_author');
-function remove_kongres_prezentacja_author($author) {
-    switch (get_post_type()) {
-        case 'kongres_prezentacja':
-        case 'prelegenci':
-            return '';
-        default:
-            return $author;
-    }
-}
-
-
-//add_filter( 'get_the_date', 'remove_date_from_post', 10, 3 );
-
-add_filter('rest_prepare_post', 'remove_date_author_from_rest', 10, 3);
-function remove_date_author_from_rest($data, $post, $context) {
-    switch ($post->post_type) {
-        case 'kongres_prezentacja':
-        case 'prelegenci':
-            unset($data->data['date']);
-            unset($data->data['author']);
-            break;
-    }
-    return $data;
-}
-
-// Dodaj akcję do wczytania skryptu w edytorze bloków
-add_action('enqueue_block_editor_assets', 'enqueue_gutenberg_custom_script');
-function enqueue_gutenberg_custom_script() {
-    wp_enqueue_script(
-        'custom-gutenberg-script',
-        plugins_url('gutenberg-custom-script.js', __FILE__),
-        array('wp-blocks', 'wp-element', 'wp-edit-post'),
-        filemtime(plugin_dir_path(__FILE__) . 'gutenberg-custom-script.js')
-    );
-}
-
 function plan_ramowy_register_endpoints() {
     add_rewrite_rule('^conference-schedule$', 'index.php?conference_schedule=true', 'top');
     add_rewrite_tag('%conference_schedule%', '([^&]+)');
@@ -256,20 +131,9 @@ function plan_ramowy_basic_authenticate() {
 }
 add_action('template_redirect', 'plan_ramowy_basic_authenticate');
 
-
 function display_custom_fields_and_sessions($content) {
     if (is_singular('kongres_scena')) {
         global $post;
-
-        // Dodaj wszystkie pola niestandardowe
-      /*  $custom_fields = get_post_custom($post->ID);
-        if (!empty($custom_fields)) {
-            $content .= '<h3>Custom Fields</h3><ul>';
-            foreach ($custom_fields as $key => $value) {
-                $content .= '<li><strong>' . esc_html($key) . ':</strong> ' . esc_html(implode(', ', $value)) . '</li>';
-            }
-            $content .= '</ul>';
-        }*/
 
         // Sprawdź, czy parametr `day` jest ustawiony w URL
         if (isset($_GET['kd'])) {

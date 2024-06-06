@@ -119,8 +119,6 @@ function modify_prelegenci_content($content) {
         $output .= '</div>'; // .prelegent-details
         $output .= '</div>'; // .container single-prelegent
         
-        $output = remove_date_and_author($output);
-        
         return $output;
     }
     

@@ -21,12 +21,12 @@ function conference_schedule_shortcode()
 
     $activePresentations = [];
     //$output = '<div id="plan-ramowy" aria-describedby="conference-schedule">';
-    $output = '';
+    $output = '<div style="text-align: center;max-width:1200px;">';
     
     $upload_dir = wp_upload_dir();
     $pdf_url = $upload_dir['baseurl'] . '/program-ramowy.pdf';
     if (file_exists($upload_dir['basedir'] . '/program-ramowy.pdf')) {
-        $output .= '<div style="text-align: center;"><a href="' . esc_url($pdf_url) . '" download="program-ramowy.pdf" class="button">Pobierz Program</a></div>';
+        $output .= '<a href="' . esc_url($pdf_url) . '" download="program-ramowy.pdf" class="button">Pobierz Program</a>';
     }
 
     
@@ -127,7 +127,7 @@ function conference_schedule_shortcode()
         }
         $output .= '</tbody></table>';
     }
-    //$output .= '</div>';
+    $output .= '</div>';
 
     // Return the HTML output
     return $output;
