@@ -286,7 +286,7 @@ function plan_ramowy_settings_page_html() {
 
 function generate_pdf_request() {
     if (isset($_POST['action']) && $_POST['action'] === 'generate_pdf') {
-        $url = 'https://kongres.wpdevelopers.eu/conference-schedule/';
+        $url =  site_url().'/conference-schedule/';
         $username = 'your_username'; // Zastąp rzeczywistą nazwą użytkownika
         $password = 'your_password'; // Zastąp rzeczywistym hasłem
         $logo_url = esc_url(get_option('congress_logo_url'));
