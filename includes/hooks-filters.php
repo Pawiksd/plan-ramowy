@@ -46,9 +46,27 @@ function modify_kongres_prezentacja_content($content) {
             $output = substr($output, 0, -2);
             $output .=  '</p>';
         }
+        
+        $sala = get_post_meta(get_the_ID(), '_kongres_prezentacja_sala', true);
+        if($sala){
+            $output .= '<p><strong>' . __('Sala:', 'textdomain') . '</strong> ' . esc_html($sala) . '</p>';
+        }
 
         $output .= '</div>';
-
+        
+        
+        if (is_singular('kongres_prezentacja')) {
+            $moderators = get_post_meta(get_the_ID(), 'moderators', true);
+            if (!empty($moderators)) {
+                $moderators_list = [];
+                foreach ($moderators as $moderator_id) {
+                    $moderator = get_post($moderator_id);
+                    $moderators_list[] = esc_html($moderator->post_title);
+                }
+                $content .= '<p><strong>' . __('Moderacja:', 'textdomain') . '</strong> ' . implode(', ', $moderators_list) . '</p>';
+            }
+        }
+        
         $prelegenci = get_post_meta($post_id, 'prelegenci', true);
         if (is_array($prelegenci) && !empty($prelegenci)) {
             

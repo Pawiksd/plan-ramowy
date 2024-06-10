@@ -47,4 +47,39 @@ jQuery(document).ready(function($) {
     }).get();
     $('#prelegenci_input').val(prelegentIds.join(','));
   }
+
+  $('#moderator_select').select2();
+  $('#add_moderator').on('click', function(e) {
+    e.preventDefault();
+    var selectedModerator = $('#moderator_select').val();
+    if (selectedModerator) {
+      var selectedText = $('#moderator_select option:selected').text();
+      var selectedThumbnail = $('#moderator_select option:selected').data('thumbnail');
+      var newListItem = '<li data-id="' + selectedModerator + '"><span class="handle">☰</span><img src="' + selectedThumbnail + '" class="moderator-thumbnail" /><span>' + selectedText + '</span><a href="#" class="remove-moderator">Usuń</a></li>';
+      $('#moderators_list').append(newListItem);
+      updateModeratorsInput();
+    }
+  });
+
+  $('#moderators_list').on('click', '.remove-moderator', function(e) {
+    e.preventDefault();
+    $(this).closest('li').remove();
+    updateModeratorsInput();
+  });
+
+  function updateModeratorsInput() {
+    var moderators = [];
+    $('#moderators_list li').each(function() {
+      moderators.push($(this).data('id'));
+    });
+    $('#moderators_input').val(moderators.join(','));
+  }
+
+  $('#moderators_list').sortable({
+    handle: '.handle',
+    update: function() {
+      updateModeratorsInput();
+    }
+  });
+
 });

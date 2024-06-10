@@ -47,6 +47,15 @@ function add_congress_presentation_meta_boxes()
     );
     
     add_meta_box(
+        'kongres_prezentacja_sala',
+        __('Sala', 'textdomain'),
+        'render_kongres_prezentacja_sala_metabox',
+        'kongres_prezentacja',
+        'side',
+        'default'
+    );
+    
+    add_meta_box(
         'congress_presentation_times',
         'Czas Prezentacji',
         'congress_presentation_times_meta_box_callback',
@@ -59,6 +68,15 @@ function add_congress_presentation_meta_boxes()
         'congress_presentation_colors',
         'Ustawienia Prezentacji',
         'congress_presentation_colors_meta_box_callback',
+        'kongres_prezentacja',
+        'side',
+        'default'
+    );
+    
+    add_meta_box(
+        'kongres_prezentacja_moderators',
+        __('Moderators', 'textdomain'),
+        'congress_presentation_moderators_meta_box_callback',
         'kongres_prezentacja',
         'side',
         'default'
@@ -78,6 +96,19 @@ add_action('add_meta_boxes', 'add_congress_presentation_meta_boxes');
 
 function save_congress_presentation_meta_data($post_id)
 {
+    if (!isset($_POST['kongres_prezentacja_sala_nonce'])) {
+        return;
+    }
+    if (!wp_verify_nonce($_POST['kongres_prezentacja_sala_nonce'], 'save_kongres_prezentacja_sala_metabox')) {
+        return;
+    }
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+    if (!current_user_can('edit_post', $post_id)) {
+        return;
+    }
+    
     if (isset($_POST['czas_start'])) {
         update_post_meta($post_id, 'czas_start', sanitize_text_field($_POST['czas_start']));
     }
@@ -119,6 +150,18 @@ function save_congress_presentation_meta_data($post_id)
     if (!empty($_POST['podsumowanie'])) {
         update_post_meta($post_id, '_podsumowanie', $_POST['podsumowanie']);
     }
+    
+    if (isset($_POST['kongres_prezentacja_sala'])) {
+        $sala = sanitize_text_field($_POST['kongres_prezentacja_sala']);
+        update_post_meta($post_id, '_kongres_prezentacja_sala', $sala);
+    }
+    
+    if (isset($_POST['moderators'])) {
+        $moderator_ids = array_map('sanitize_text_field', explode(',', $_POST['moderators']));
+        update_post_meta($post_id, 'moderators', $moderator_ids);
+    } else {
+        delete_post_meta($post_id, 'moderators');
+    }
 }
 
 add_action('save_post', 'save_congress_presentation_meta_data');
@@ -155,5 +198,36 @@ function congress_presentation_prelegenci_meta_box_callback($post)
     echo '<button id="add_prelegent" class="button">Dodaj Prelegenta</button>';
     
     echo '<input type="hidden" name="prelegenci" id="prelegenci_input" value="' . esc_attr(implode(',', $selected_prelegenci)) . '">';
+    echo '</div>';
+}
+
+function congress_presentation_moderators_meta_box_callback($post) {
+    $selected_moderators = get_post_meta($post->ID, 'moderators', true);
+    if (!is_array($selected_moderators)) {
+        $selected_moderators = [];
+    }
+    $moderators = get_posts(['post_type' => 'prelegenci', 'numberposts' => -1, 'orderby' => 'ID', 'order' => 'ASC']);
+    echo '<div class="congress-presentation-moderators-meta-box">';
+    echo '<ul id="moderators_list">';
+    foreach ($selected_moderators as $moderator_id) {
+        $moderator = get_post($moderator_id);
+        $thumbnail = get_the_post_thumbnail($moderator_id, [50, 50], ['class' => 'moderator-thumbnail']);
+        echo '<li data-id="' . esc_attr($moderator_id) . '">';
+        echo '<span class="handle">☰</span>';
+        echo $thumbnail;
+        echo '<span>' . esc_html($moderator->post_title) . '</span>';
+        echo '<a href="#" class="remove-moderator">Usuń</a>';
+        echo '</li>';
+    }
+    echo '</ul>';
+    echo '<select id="moderator_select">';
+    echo '<option value="">Wybierz moderatora...</option>';
+    foreach ($moderators as $moderator) {
+        $thumbnail_url = get_the_post_thumbnail_url($moderator->ID, [50, 50]);
+        echo '<option value="' . esc_attr($moderator->ID) . '" data-thumbnail="' . esc_attr($thumbnail_url) . '">' . esc_html($moderator->post_title) . '</option>';
+    }
+    echo '</select>';
+    echo '<button id="add_moderator" class="button">Dodaj Moderatora</button>';
+    echo '<input type="hidden" name="moderators" id="moderators_input" value="' . esc_attr(implode(',', $selected_moderators)) . '">';
     echo '</div>';
 }

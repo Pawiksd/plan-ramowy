@@ -31,6 +31,15 @@ function congress_presentation_scena_meta_box_callback($post)
     echo '<p>Trzymaj klawisz Ctrl (Cmd na Mac) aby zaznaczyć więcej niż jedną scenę.</p>';
 }
 
+
+
+function render_kongres_prezentacja_sala_metabox($post) {
+    wp_nonce_field('save_kongres_prezentacja_sala_metabox', 'kongres_prezentacja_sala_nonce');
+    $value = get_post_meta($post->ID, '_kongres_prezentacja_sala', true);
+    echo '<label for="kongres_prezentacja_sala">'.__('Sala', 'textdomain').'</label>';
+    echo '<input type="text" id="kongres_prezentacja_sala" name="kongres_prezentacja_sala" value="' . esc_attr($value) . '" size="25" />';
+}
+
 function congress_presentation_times_meta_box_callback($post)
 {
     global $timeslots;
@@ -72,7 +81,6 @@ function congress_presentation_colors_meta_box_callback($post)
     echo '<p><label for="border_color">Kolor tekstu:</label>';
     echo '<input type="color" id="text_color" name="text_color" value="' . esc_attr($text_color) . '"></p>';
 }
-
 
 function congress_day_scenes_meta_box_callback($post)
 {

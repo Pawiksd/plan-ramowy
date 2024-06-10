@@ -98,12 +98,27 @@ function conference_schedule_shortcode()
                     $prelegenci_names = array_map('get_the_title', $prelegenci);
                     $czas_start = get_post_meta($prezentacja->ID, 'czas_start', true);
                     $czas_zakonczenia = get_post_meta($prezentacja->ID, 'czas_zakonczenia', true);
+                    
+                    $sala = get_post_meta($prezentacja->ID, '_kongres_prezentacja_sala', true);
+                    
+                    $moderators = get_post_meta($prezentacja->ID, 'moderators', true);
+                    if (!empty($moderators)) {
+                        $moderators_list = [];
+                        foreach ($moderators as $moderator_id) {
+                            $moderator = get_post($moderator_id);
+                            $moderators_list[] = esc_html($moderator->post_title);
+                        }
+                        $moderators =  implode(', ', $moderators_list);
+                    }
+                    
                     $tooltip_content = sprintf(
-                        'Dzień: %s<br>Godzina: %s - %s<br>Scena: %s<br>Prelegenci: %s<br>Podsumowanie: %s',
+                        'Dzień: %s<br>Godzina: %s - %s<br>Scena: %s<br>Sala: %s<br>Moderacja: %s<br>Prelegenci: %s<br>Podsumowanie: %s',
                         get_the_title($dzien->ID),
                         $czas_start,
                         $czas_zakonczenia,
                         get_post_meta($dzien->ID, 'scene_name_' . $scena->ID, true) ?: get_the_title($scena->ID),
+                        $sala,
+                        $moderators,
                         implode(', ', $prelegenci_names),
                         esc_html(get_the_excerpt($prezentacja->ID))
                     );
