@@ -77,3 +77,62 @@ h2 {
 }
 
 .toplevel_page_plan-ramowy-settings .wrap {max-width: 900px;}
+
+
+/* Styles for Select2 */
+.select2-container--default .select2-selection--single {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    height: 36px;
+    padding: 4px 12px;
+}
+
+.select2-container--default .select2-selection--multiple {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    min-height: 36px;
+    padding: 4px 12px;
+}
+
+/* Styles for Moderators List */
+#moderators_list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+#moderators_list li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 5px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+#moderators_list li .handle {
+    cursor: move;
+    margin-right: 10px;
+}
+
+#moderators_list li img.moderator-thumbnail {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+#moderators_list li span {
+    flex-grow: 1;
+}
+
+#moderators_list li a.remove-moderator {
+    color: #a00;
+    text-decoration: none;
+    margin-left: 10px;
+}
+
+#moderators_list li a.remove-moderator:hover {
+    text-decoration: underline;
+}

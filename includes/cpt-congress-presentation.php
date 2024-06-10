@@ -75,7 +75,7 @@ function add_congress_presentation_meta_boxes()
     
     add_meta_box(
         'kongres_prezentacja_moderators',
-        __('Moderators', 'textdomain'),
+        __('Moderacja', 'textdomain'),
         'congress_presentation_moderators_meta_box_callback',
         'kongres_prezentacja',
         'side',
