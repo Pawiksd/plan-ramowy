@@ -42,7 +42,16 @@ function render_kongres_prezentacja_sala_metabox($post) {
 
 function congress_presentation_times_meta_box_callback($post)
 {
-    global $timeslots;
+    
+    $start = new DateTime('08:00');
+    $end = new DateTime('23:00');
+    $interval = new DateInterval('PT15M');
+    $period = new DatePeriod($start, $interval, $end);
+    foreach ($period as $time) {
+        $next_time = clone $time;
+        $next_time->add($interval);
+        $timeslots[] = $time->format('H:i') . ' - ' . $next_time->format('H:i');
+    }
     
     $czas_start = get_post_meta($post->ID, 'czas_start', true);
     $czas_zakonczenia = get_post_meta($post->ID, 'czas_zakonczenia', true);
