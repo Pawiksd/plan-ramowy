@@ -79,13 +79,10 @@ function modify_prelegenci_content($content) {
         
         // Wyświetlenie wszystkich custom fields
         $custom_fields = get_post_custom($post_id);
-        if (!empty($custom_fields)) {
+        
+        if (!empty($custom_fields['biografia'][0])) {
             $output .= '<div class="prelegent-custom-fields"><h2>Dodatkowe informacje</h2><ul>';
-            foreach ($custom_fields as $key => $value) {
-                if (!is_protected_meta($key) && $key!='image') {
-                    $output .= '<li>' . esc_html(implode(', ', $value)) . '</li>';
-                }
-            }
+            $output .= '<li>' . esc_html($custom_fields['biografia'][0]) . '</li>';
             $output .= '</ul></div>';
         }
         
@@ -124,7 +121,7 @@ function modify_prelegenci_content($content) {
     
     return $content;
 }
-add_filter('the_content', 'modify_prelegenci_content');
+//add_filter('the_content', 'modify_prelegenci_content');
 
 function modify_prelegenci_archive_content($query) {
     if ($query->is_main_query() && !is_admin() && $query->is_post_type_archive('prelegenci')) {
@@ -152,37 +149,56 @@ add_action('loop_end', 'close_prelegenci_archive_container');
 function modify_arch_prelegenci_content($content) {
     if (is_post_type_archive('prelegenci') && in_the_loop() && is_main_query()) {
         $post_id = get_the_ID();
-        ob_start();
-        ?>
-        <div class="prelegent-item">
-            <?php if (has_post_thumbnail()) : ?>
-                <div class="prelegent-image">
-                    <a href="<?php the_permalink(); ?>">
-                        <?php the_post_thumbnail('thumbnail', ['loading' => 'lazy']); ?>
-                    </a>
-                </div>
-            <?php endif; ?>
-            
-            <div class="prelegent-details">
-                <h2><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h2>
-                <div class="prelegent-excerpt"><?php the_excerpt(); ?></div>
-                <?php
-                $custom_fields = get_post_custom();
-                if (!empty($custom_fields)) {
-                    echo '<div class="prelegent-custom-fields"><ul>';
-                    foreach ($custom_fields as $key => $value) {
-                        if (!is_protected_meta($key)) {
-                            echo '<li><strong>' . esc_html($key) . ':</strong> ' . esc_html(implode(', ', $value)) . '</li>';
-                        }
-                    }
-                    echo '</ul></div>';
-                }
-                ?>
-            </div> <!-- .prelegent-details -->
-        </div> <!-- .prelegent-item -->
-        <?php
-        $content = ob_get_clean();
+        $content = '<div class="prelegent-item">';
+
+        if (has_post_thumbnail()) {
+            $content .= '<div class="prelegent-image">';
+            $content .= '<a href="' . get_permalink() . '">';
+            $content .= get_the_post_thumbnail($post_id, 'thumbnail', ['loading' => 'lazy']);
+            $content .= '</a></div>';
+        }
+
+        $content .= '<div class="prelegent-details">';
+        $content .= '<h2><a href="' . get_permalink() . '">' . get_the_title() . '</a></h2>';
+      //  $content .= '<div class="prelegent-excerpt">' . get_the_excerpt() . '</div>';
+
+
+        $content .= '</div>'; // .prelegent-details
+        $content .= '</div>'; // .prelegent-item
     }
     return $content;
 }
+
 add_filter('the_content', 'modify_arch_prelegenci_content');
+
+// Krok 1: Zarejestruj nową meta wartość
+function add_prelegent_initial_meta() {
+    register_post_meta('prelegenci', '_prelegent_last_word_initial', [
+        'show_in_rest' => true,
+        'single' => true,
+        'type' => 'string',
+    ]);
+}
+add_action('init', 'add_prelegent_initial_meta');
+
+// Krok 2: Zaktualizuj meta wartość przy zapisywaniu posta
+function save_prelegent_last_word_initial($post_id) {
+    if (get_post_type($post_id) === 'prelegenci') {
+        $title = get_the_title($post_id);
+        $words = explode(' ', $title);
+        $last_word = end($words);
+        $initial = substr($last_word, 0, 1);
+        update_post_meta($post_id, '_prelegent_last_word_initial', $initial);
+    }
+}
+add_action('save_post', 'save_prelegent_last_word_initial');
+
+// Krok 3: Zmodyfikuj zapytanie główne, aby sortować według tej meta wartości
+function modify_prelegenci_query($query) {
+    if (!is_admin() && $query->is_main_query() && is_post_type_archive('prelegenci')) {
+        $query->set('meta_key', '_prelegent_last_word_initial');
+        $query->set('orderby', 'meta_value');
+        $query->set('order', 'ASC');
+    }
+}
+add_action('pre_get_posts', 'modify_prelegenci_query');

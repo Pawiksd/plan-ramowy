@@ -136,3 +136,15 @@ h2 {
 #moderators_list li a.remove-moderator:hover {
     text-decoration: underline;
 }
+
+.wp-picker-container {
+    position: relative;
+}
+
+.wp-color-picker {
+    position: absolute;
+    z-index: 1000;
+}
+.scene-container{
+    margin-left: 100px
+}

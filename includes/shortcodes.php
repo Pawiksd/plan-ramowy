@@ -15,10 +15,10 @@ foreach ($period as $time) {
 function conference_schedule_shortcode()
 {
     global $timeslots;
-
+    
     // Retrieve post data
     $dni = get_posts(['post_type' => 'kongres_dzien', 'numberposts' => -1, 'orderby' => 'ID', 'order' => 'ASC']);
-
+    
     $activePresentations = [];
     //$output = '<div id="plan-ramowy" aria-describedby="conference-schedule">';
     $output = '<div style="text-align: center;max-width:1200px;">';
@@ -28,32 +28,38 @@ function conference_schedule_shortcode()
     if (file_exists($upload_dir['basedir'] . '/program-ramowy.pdf')) {
         $output .= '<a href="' . esc_url($pdf_url) . '" download="program-ramowy.pdf" class="button">Pobierz Program</a>';
     }
-
+    
     
     //$output .= '<caption>Plan Ramowy</caption>';
-
+    
     foreach ($dni as $dzien) {
         $output .= '<table class="conference-day-schedule">';
         // Retrieve scene order and settings for the day
         $scene_order = get_post_meta($dzien->ID, 'scene_order', true);
+        
         if ($scene_order) {
             $scene_ids = explode(',', $scene_order);
             $sceny = [];
             foreach ($scene_ids as $scene_id) {
-                $sceny[] = get_post($scene_id);
+                $scc = get_post($scene_id);
+                if ($scc->post_type === 'kongres_scena') {
+                    $sceny[] = get_post($scene_id);
+                }
+                
+                
             }
         } else {
             // Default to all scenes if no specific order is set
             $sceny = get_posts(['post_type' => 'kongres_scena', 'numberposts' => -1, 'orderby' => 'ID', 'order' => 'ASC']);
         }
-
+        
         // Calculate time slots based on the presentations for the day
         $presentations = get_posts(['post_type' => 'kongres_prezentacja', 'numberposts' => -1, 'meta_query' => [
             ['key' => 'presentation_day_id', 'value' => $dzien->ID, 'compare' => '=']
         ]]);
-
+        
         $timeslots = calculate_timeslots($presentations);
-
+        
         $output .= '<thead>';
         $output .= '<tr><th scope="col" class="wss-nb" colspan="' . (count($sceny) + 1) . '"><strong>' . get_the_title($dzien->ID) . '</strong></th></tr>';
         $output .= '<tr><th scope="col" id="pr-godzina" class="wss-nb"></th>';
@@ -71,20 +77,20 @@ function conference_schedule_shortcode()
         }
         $output .= '</tr></thead>';
         $output .= '<tbody>';
-
+        
         // Loop through each timeslot and scene to generate the presentation cells
         foreach ($timeslots as $timeslotIndex => $timeslot) {
             $output .= '<tr>';
             $output .= '<th scope="row">' . $timeslot . '</th>';
-
+            
             foreach ($sceny as $scena) {
                 $scena_id = $scena->ID;
-
+                
                 // Check for active presentations
                 if (!empty($activePresentations[$scena_id][$timeslotIndex])) {
                     continue; // Skip if the presentation is active
                 }
-
+                
                 $prezentacja = znajdzPrezentacje($dzien->ID, $scena_id, $timeslot);
                 if ($prezentacja) {
                     $colspan = obliczColspan($prezentacja);
@@ -93,7 +99,8 @@ function conference_schedule_shortcode()
                     $border_color = get_post_meta($prezentacja->ID, 'border_color', true);
                     $text_color = get_post_meta($prezentacja->ID, 'text_color', true);
                     $style = 'style="background-color:' . esc_attr($bg_color) . ';color:' . esc_attr($text_color) . '; border-radius: 10px; border: 3px solid ' . esc_attr($border_color) . ';"';
-
+                    $style2 = 'style="color:' . esc_attr($text_color) . ';"';
+                    
                     $prelegenci = get_post_meta($prezentacja->ID, 'prelegenci', true) ?: [];
                     $prelegenci_names = array_map('get_the_title', $prelegenci);
                     $czas_start = get_post_meta($prezentacja->ID, 'czas_start', true);
@@ -108,26 +115,42 @@ function conference_schedule_shortcode()
                             $moderator = get_post($moderator_id);
                             $moderators_list[] = esc_html($moderator->post_title);
                         }
-                        $moderators =  implode(', ', $moderators_list);
+                        $moderators = implode(', ', $moderators_list);
                     }
-                    
-                    $tooltip_content = sprintf(
-                        'Dzień: %s<br>Godzina: %s - %s<br>Scena: %s<br>Sala: %s<br>Moderacja: %s<br>Prelegenci: %s<br>Podsumowanie: %s',
+                    $scene_name = get_post_meta($dzien->ID, 'scene_name_' . $scena->ID, true) ?: get_the_title($scena->ID);
+                    $tooltip_content = sprintf('Dzień: %s<br>Godzina: %s - %s',
                         get_the_title($dzien->ID),
                         $czas_start,
-                        $czas_zakonczenia,
-                        get_post_meta($dzien->ID, 'scene_name_' . $scena->ID, true) ?: get_the_title($scena->ID),
-                        $sala,
-                        $moderators,
-                        implode(', ', $prelegenci_names),
-                        esc_html(get_the_excerpt($prezentacja->ID))
+                        $czas_zakonczenia
                     );
-
-                    $output .= '<td scope="cell" class="wss-nb" colspan="' . $colspan . '" rowspan="' . $rowspan . '" data-tooltip-url="'.get_permalink($prezentacja->ID).'" data-tooltip="' . esc_attr($tooltip_content) . '">';
+                    
+                    if (!empty($scene_name)) {
+                        $tooltip_content .= sprintf('<br>Scena: %s', $scene_name);
+                    }
+                    
+                    if (!empty($sala)) {
+                        $tooltip_content .= sprintf('<br>Sala: %s', $sala);
+                    }
+                    
+                    if (!empty($moderators)) {
+                        $tooltip_content .= sprintf('<br>Moderacja: %s', $moderators);
+                    }
+                    
+                    if (!empty($prelegenci_names)) {
+                        $tooltip_content .= sprintf('<br>Prelegenci: %s', implode(', ', $prelegenci_names));
+                    }
+                    
+                    $summary = esc_html(get_the_excerpt($prezentacja->ID));
+                    if (!empty($summary)) {
+                        $tooltip_content .= sprintf('<br>Podsumowanie: %s', $summary);
+                    }
+                    
+                    $output .= '<td scope="cell" class="wss-nb" colspan="' . $colspan . '" rowspan="' . $rowspan . '" data-tooltip-url="' . get_permalink($prezentacja->ID) . '" data-tooltip="' . esc_attr($tooltip_content) . '">';
+                    
                     $output .= '<div ' . $style . '>';
-                    $output .= '<a href="' . get_permalink($prezentacja->ID) . '">' . get_the_title($prezentacja->ID) . '</a>';
+                    $output .= '<a href="' . get_permalink($prezentacja->ID) . '" '.$style2.'>' . get_the_title($prezentacja->ID) . '</a>';
                     $output .= '</div></td>';
-
+                    
                     // Set active state for the presentation
                     for ($i = $timeslotIndex; $i < $timeslotIndex + $rowspan; $i++) {
                         for ($j = 0; $j < $colspan; $j++) {
@@ -143,7 +166,7 @@ function conference_schedule_shortcode()
         $output .= '</tbody></table>';
     }
     $output .= '</div>';
-
+    
     // Return the HTML output
     return $output;
 }
@@ -164,7 +187,7 @@ function znajdzPrezentacje($dzienId, $scenaId, $timeslot)
             ['key' => 'presentation_day_id', 'value' => $dzienId, 'compare' => '=']
         ]
     ]);
-
+    
     if (!empty($prezentacje)) {
         $prezentacja = $prezentacje[0];
         $prezentacja->tooltip_content = apply_filters('the_content', $prezentacja->post_content);
@@ -203,28 +226,28 @@ function calculate_timeslots($presentations)
     $end_times = array_map(function ($p) {
         return get_post_meta($p->ID, 'czas_zakonczenia', true);
     }, $presentations);
-
+    
     $start_times = array_filter($start_times);
     $end_times = array_filter($end_times);
-
+    
     if (empty($start_times) || empty($end_times)) {
         return ['09:30 - 10:00', '10:00 - 10:30', '10:30 - 11:00', '11:00 - 11:30', '11:30 - 12:00', '12:00 - 12:30', '12:30 - 13:00', '13:00 - 13:30', '13:30 - 14:00', '14:00 - 14:30', '14:30 - 15:00', '15:00 - 15:30', '15:30 - 16:00', '16:00 - 16:30', '16:30 - 17:00', '17:00 - 17:30', '17:30 - 18:00', '18:00 - 18:30', '18:30 - 19:00', '19:00 - 23:00'];
     }
-
+    
     $earliest_start = min($start_times);
     $latest_end = max($end_times);
-
+    
     $timeslots = [];
     $start = DateTime::createFromFormat('H:i', $earliest_start)->sub(new DateInterval('PT30M'));
     $end = DateTime::createFromFormat('H:i', $latest_end)->add(new DateInterval('PT30M'));
     $interval = new DateInterval('PT30M');
     $period = new DatePeriod($start, $interval, $end);
-
+    
     foreach ($period as $time) {
         $next_time = clone $time;
         $next_time->add($interval);
         $timeslots[] = $time->format('H:i') . ' - ' . $next_time->format('H:i');
     }
-
+    
     return $timeslots;
 }

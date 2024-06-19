@@ -84,26 +84,47 @@ function congress_presentation_colors_meta_box_callback($post)
 
 function congress_day_scenes_meta_box_callback($post)
 {
-    $scene_order = get_post_meta($post->ID, 'scene_order', true);
+    
+    $scene_order_str = get_post_meta($post->ID, 'scene_order', true);
+    
+    $scene_ids = explode(',', $scene_order_str);
+    
+    foreach ($scene_ids as $scene_id) {
+        //$scc = get_post($scene_id);
+        //if($scc->post_type === 'kongres_scena'){
+            $scene_order[] = $scene_id ;
+       // }
+       
+       
+    }
+    
     if (!is_array($scene_order)) {
         $scene_order = [];
     }
     
     $sceny = get_posts(['post_type' => 'kongres_scena', 'numberposts' => -1, 'orderby' => 'ID', 'order' => 'ASC']);
-    
-    echo '<ul id="scene_order" style="width: 500px;margin-left: 100px;">';
-    echo '<li><span style="width: 30px;">&nbsp;</span><span style="width: 180px;">Nazwa</span><span style="width: 50px;">Kolor Tła</span><span style="width: 50px;">Kolor Tekstu</span><span>Rozmiar Tekstu (px)</span></li>';
+
+    echo '<div class="scene-container"><select id="scene_select" style="width: 700px;margin-left: 100px;" multiple>';
     foreach ($sceny as $scena) {
-        $scene_name = get_post_meta($post->ID, 'scene_name_' . $scena->ID, true);
-        $bg_color = get_post_meta($post->ID, 'scene_bg_color_' . $scena->ID, true);
-        $text_color = get_post_meta($post->ID, 'scene_text_color_' . $scena->ID, true);
-        $text_size = get_post_meta($post->ID, 'scene_text_size_' . $scena->ID, true);
-        echo '<li data-id="' . esc_attr($scena->ID) . '">';
+        echo '<option value="' . esc_attr($scena->ID) . '">' . esc_html(get_the_title($scena->ID)) . '</option>';
+    }
+    echo '</select>';
+    echo '<button type="button" id="add_scene_button">Dodaj Scenę</button></div>';
+    
+    echo '<ul id="scene_order" style="width: 700px;margin-left: 100px;margin-top: 20px;">';
+    echo '<li><span style="width: 30px;">&nbsp;</span><span style="width: 180px;">Nazwa</span><span style="width: 150px;">Kolor Tła</span><span style="width: 150px;">Kolor Tekstu</span><span>Rozmiar Tekstu (px)</span><span>Usuń</span></li>';
+    foreach ($scene_order as $scene_id) {
+        $scene_name = get_post_meta($post->ID, 'scene_name_' . $scene_id, true);
+        $bg_color = get_post_meta($post->ID, 'scene_bg_color_' . $scene_id, true);
+        $text_color = get_post_meta($post->ID, 'scene_text_color_' . $scene_id, true);
+        $text_size = get_post_meta($post->ID, 'scene_text_size_' . $scene_id, true);
+        echo '<li data-id="' . esc_attr($scene_id) . '">';
         echo '<span class="handle">☰</span>';
-        echo '<input type="text" name="scene_name_' . esc_attr($scena->ID) . '" value="' . esc_attr($scene_name) . '" placeholder="' . esc_html(get_the_title($scena->ID)) . '">';
-        echo '<input type="color" name="scene_bg_color_' . esc_attr($scena->ID) . '" value="' . esc_attr($bg_color) . '" placeholder="Kolor tła">';
-        echo '<input type="color" name="scene_text_color_' . esc_attr($scena->ID) . '" value="' . esc_attr($text_color) . '" placeholder="Kolor tekstu">';
-        echo '<input type="text" name="scene_text_size_' . esc_attr($scena->ID) . '" value="' . esc_attr($text_size) . '" placeholder="Wielkość tekstu">';
+        echo '<input type="text" name="scene_name_' . esc_attr($scene_id) . '" value="' . esc_attr($scene_name) . '" placeholder="' . esc_html(get_the_title($scene_id)) . '">';
+        echo '<input type="text" class="hex-color" maxlength="7" pattern="#[a-fA-F0-9]{6}" name="scene_bg_color_' . esc_attr($scene_id) . '" value="' . esc_attr($bg_color) . '" placeholder="Kolor tła">';
+        echo '<input type="text" class="hex-color" maxlength="7" pattern="#[a-fA-F0-9]{6}" name="scene_text_color_' . esc_attr($scene_id) . '" value="' . esc_attr($text_color) . '" placeholder="Kolor tekstu">';
+        echo '<input type="text" name="scene_text_size_' . esc_attr($scene_id) . '" value="' . esc_attr($text_size) . '" placeholder="Wielkość tekstu">';
+        echo '<button type="button" class="remove_scene_button">Usuń</button>';
         echo '</li>';
     }
     echo '</ul>';

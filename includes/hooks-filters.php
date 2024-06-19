@@ -1,6 +1,7 @@
 <?php
 
-function modify_kongres_prezentacja_content($content) {
+function modify_kongres_prezentacja_content($content)
+{
     
     if (is_singular('kongres_prezentacja')) {
         
@@ -14,7 +15,6 @@ function modify_kongres_prezentacja_content($content) {
         if (has_post_thumbnail()) {
             $output .= get_the_post_thumbnail($post_id, 'large', ['loading' => 'lazy']);
         }
-        
         
         
         // Dodanie treści sesji
@@ -40,35 +40,61 @@ function modify_kongres_prezentacja_content($content) {
         }
         if ($scena) {
             $output .= '<p><strong>Scena:</strong> ';
-            foreach($scena as $scena_id){
-                $output .= get_post_title_by_id($scena_id).', ';
+            foreach ($scena as $scena_id) {
+                $output .= get_post_title_by_id($scena_id) . ', ';
             }
             $output = substr($output, 0, -2);
-            $output .=  '</p>';
+            $output .= '</p>';
         }
         
         $sala = get_post_meta(get_the_ID(), '_kongres_prezentacja_sala', true);
-        if($sala){
+        if ($sala) {
             $output .= '<p><strong>' . __('Sala:', 'textdomain') . '</strong> ' . esc_html($sala) . '</p>';
         }
-
+        
         $output .= '</div>';
         
         
-        if (is_singular('kongres_prezentacja')) {
-            $moderators = get_post_meta(get_the_ID(), 'moderators', true);
-            if (!empty($moderators)) {
-                $moderators_list = [];
-                foreach ($moderators as $moderator_id) {
-                    $moderator = get_post($moderator_id);
-                    $moderators_list[] = esc_html($moderator->post_title);
-                }
-                $content .= '<p><strong>' . __('Moderacja:', 'textdomain') . '</strong> ' . implode(', ', $moderators_list) . '</p>';
+        $moderators = get_post_meta(get_the_ID(), 'moderators', true);
+        if (is_array($moderators) && !is_array_empty($moderators)) {
+            
+            
+            // Wyświetlenie prelegentów
+            $output .= '<div class="session-speakers">';
+            $output .= '<h2>Moderacja</h2>';
+            $output .= '<ul>';
+            
+            
+            $prelegenci_data = get_posts([
+                'post_type' => 'prelegenci',
+                'post__in' => $moderators,
+                'orderby' => 'post__in',
+                'posts_per_page' => -1
+            ]);
+            
+            foreach ($prelegenci_data as $prelegent) {
+                $thumbnail = get_the_post_thumbnail($prelegent->ID, 'thumbnail', ['loading' => 'lazy']);
+                $biografia = get_post_meta($prelegent->ID, 'biografia', true);
+                $excerpt = $prelegent->post_excerpt;
+                $prelegent_link = get_permalink($prelegent->ID);
+                
+                $output .= '<li>';
+                $output .= $thumbnail;
+                $output .= '<div><h3>' . '<a href="' . esc_url($prelegent_link) . '">';
+                $output .= esc_html($prelegent->post_title);
+                $output .= '</a>' . '</h3>';
+                $output .= '<p class="prelegent-excerpt">' . esc_html($excerpt) . '</p></div>';
+                $output .= '</li>';
             }
+            
+            $output .= '</ul>';
+            $output .= '</div>'; // .session-speakers
+            
+            
         }
         
         $prelegenci = get_post_meta($post_id, 'prelegenci', true);
-        if (is_array($prelegenci) && !empty($prelegenci)) {
+        if (is_array($prelegenci) && !is_array_empty($prelegenci)) {
             
             
             // Wyświetlenie prelegentów
@@ -104,21 +130,25 @@ function modify_kongres_prezentacja_content($content) {
             $output .= '</div>'; // .container single-session
             
         }
-    
+        
         return $output;
     }
     
     return $content;
 }
+
 add_filter('the_content', 'modify_kongres_prezentacja_content');
 
-function plan_ramowy_register_endpoints() {
+function plan_ramowy_register_endpoints()
+{
     add_rewrite_rule('^conference-schedule$', 'index.php?conference_schedule=true', 'top');
     add_rewrite_tag('%conference_schedule%', '([^&]+)');
 }
+
 add_action('init', 'plan_ramowy_register_endpoints');
 
-function plan_ramowy_endpoint_template($template) {
+function plan_ramowy_endpoint_template($template)
+{
     global $wp_query;
     
     if (isset($wp_query->query_vars['conference_schedule'])) {
@@ -130,12 +160,14 @@ function plan_ramowy_endpoint_template($template) {
     
     return $template;
 }
+
 add_filter('template_include', 'plan_ramowy_endpoint_template');
 
-function plan_ramowy_basic_authenticate() {
+function plan_ramowy_basic_authenticate()
+{
     global $wp_query;
     
-    if (isset($wp_query->query_vars['conference_schedule'])){
+    if (isset($wp_query->query_vars['conference_schedule'])) {
         $username = 'your_username';
         $password = 'your_password';
         
@@ -147,12 +179,14 @@ function plan_ramowy_basic_authenticate() {
         }
     }
 }
+
 add_action('template_redirect', 'plan_ramowy_basic_authenticate');
 
-function display_custom_fields_and_sessions($content) {
+function display_custom_fields_and_sessions($content)
+{
     if (is_singular('kongres_scena')) {
         global $post;
-
+        
         // Sprawdź, czy parametr `day` jest ustawiony w URL
         if (isset($_GET['kd'])) {
             $day_id = intval($_GET['kd']);
@@ -192,10 +226,12 @@ function display_custom_fields_and_sessions($content) {
     
     return $content;
 }
+
 add_filter('the_content', 'display_custom_fields_and_sessions');
 
 // Funkcja do uruchamiania generowania PDF przy zapisywaniu/aktualizowaniu postów
-function trigger_pdf_generation_on_save($post_id, $post, $update) {
+function trigger_pdf_generation_on_save($post_id, $post, $update)
+{
     // Sprawdź, czy jest to zapis/aktualizacja postów typu kongres_dzien, kongres_scena lub kongres_prezentacja
     if (in_array($post->post_type, array('kongres_dzien', 'kongres_scena', 'kongres_prezentacja'))) {
         /*
@@ -205,4 +241,5 @@ function trigger_pdf_generation_on_save($post_id, $post, $update) {
         generate_pdf_request(true);
     }
 }
+
 add_action('save_post', 'trigger_pdf_generation_on_save', 10, 3);

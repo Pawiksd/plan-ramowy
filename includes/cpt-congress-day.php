@@ -50,7 +50,11 @@ add_action('add_meta_boxes', 'add_congress_day_meta_boxes');
 
 function save_congress_day_meta_data($post_id)
 {
+    
     if (isset($_POST['scene_order'])) {
+    /*    $sco = trim(',',$_POST['scene_order']);
+        $sco = str_replace(',,',',',$sco);
+    */
         update_post_meta($post_id, 'scene_order', sanitize_text_field($_POST['scene_order']));
     }
     

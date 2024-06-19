@@ -1,13 +1,54 @@
 jQuery(document).ready(function($) {
-  // Enable sortable for the scene order list
-  $('#scene_order').sortable({
-    handle: '.handle',
-    update: function(event, ui) {
-      // Update hidden input field with the new order
-      var sceneOrder = $(this).sortable('toArray', { attribute: 'data-id' });
-      $('#scene_order_input').val(sceneOrder.join(','));
+  // Initialize Select2
+    $('#scene_select').select2();
+
+    // Add scene to the list
+    $('#add_scene_button').click(function() {
+        var selectedScenes = $('#scene_select').val();
+        selectedScenes.forEach(function(sceneId) {
+            var sceneTitle = $('#scene_select option[value="' + sceneId + '"]').text();
+            $('#scene_order').append(
+                '<li data-id="' + sceneId + '">' +
+                '<span class="handle">☰</span>' +
+                '<input type="text" name="scene_name_' + sceneId + '" placeholder="' + sceneTitle + '">' +
+                '<input type="text" class="hex-color" name="scene_bg_color_' + sceneId + '" placeholder="Kolor tła" maxlength="7" pattern="#[a-fA-F0-9]{6}">' +
+                '<input type="text" class="hex-color" name="scene_text_color_' + sceneId + '" placeholder="Kolor tekstu" maxlength="7" pattern="#[a-fA-F0-9]{6}">' +
+                '<input type="text" name="scene_text_size_' + sceneId + '" placeholder="Wielkość tekstu">' +
+                '<button type="button" class="remove_scene_button">Usuń</button>' +
+                '</li>'
+            );
+            applyColorPicker();
+        });
+        $('#scene_select').val(null).trigger('change');
+        updateSceneOrderInput();
+    });
+
+    // Enable sortable for the scene order list
+    $('#scene_order').sortable({
+        handle: '.handle',
+        update: function(event, ui) {
+            updateSceneOrderInput();
+        }
+    }).disableSelection();
+
+    // Remove scene from the list
+    $(document).on('click', '.remove_scene_button', function() {
+        $(this).closest('li').remove();
+        updateSceneOrderInput();
+    });
+
+  function updateSceneOrderInput() {
+    var sceneOrder = $('#scene_order').sortable('toArray', { attribute: 'data-id' });
+    var cleanedOrder = sceneOrder.filter(function(item) { return item.trim() !== ''; });
+    $('#scene_order_input').val(cleanedOrder.join(','));
+  }
+    // Initialize color pickers
+    function applyColorPicker() {
+        $('.hex-color').wpColorPicker();
     }
-  }).disableSelection();
+
+    applyColorPicker();
+
 
   // Initialize Select2 for the prelegent select dropdown
   $('#prelegent_select').select2({
@@ -81,5 +122,4 @@ jQuery(document).ready(function($) {
       updateModeratorsInput();
     }
   });
-
 });
