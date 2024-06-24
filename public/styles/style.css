@@ -17,14 +17,25 @@
 .conference-day-schedule th, .conference-day-schedule td {
     padding: 0;
     text-align: center;
+    height: 100%;
 }
-.conference-day-schedule th{width: 10%}
-.conference-day-schedule th#pr-godzina{
+.conference-day-schedule th {
+    width: 10%;
+}
+.conference-day-schedule th#pr-godzina {
     min-width: 95px;
 }
-.conference-day-schedule td{text-align: center;}
+.conference-day-schedule td {
+    text-align: center;
+    vertical-align: top; /* Ensure the td content aligns at the top */
+}
 
-.conference-day-schedule td > div {
+.conference-day-schedule td.wss-nb {
+    height: 100%; /* Ensure the td takes up its full height */
+    position: relative; /* Necessary for the child div to be positioned correctly */
+}
+
+.conference-day-schedule td.wss-nb > div {
     height: 100%;
     width: 100%;
     display: flex;
@@ -32,6 +43,11 @@
     align-items: center;
     padding: 8px;
     box-sizing: border-box;
+    position: absolute; /* Make the div fill the td */
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
 }
 
 .conference-day-schedule td[colspan] > div {
@@ -58,8 +74,12 @@
     border-radius: 8px;
     padding: 4px;
 }
-.conference-day-schedule th.wss-nb, .conference-day-schedule td.wss-nb {background-color: transparent}
-.conference-day-schedule th a,.conference-day-schedule td a{text-decoration: none;}
+.conference-day-schedule th.wss-nb, .conference-day-schedule td.wss-nb {
+    background-color: transparent;
+}
+.conference-day-schedule th a, .conference-day-schedule td a {
+    text-decoration: none;
+}
 
 .custom-tooltip {
     position: absolute;
