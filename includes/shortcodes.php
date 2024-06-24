@@ -118,14 +118,19 @@ function conference_schedule_shortcode() {
                     $style2 = 'style="color:' . esc_attr($text_color) . ';"';
                     
                     $prelegenci = get_post_meta($prezentacja->ID, 'prelegenci', true) ?: [];
-                    $prelegenci_names = array_map('get_the_title', $prelegenci);
+                    $prelegenci_names = [];
+                    if(!is_array_empty($prelegenci)){
+                        $prelegenci_names = array_map('get_the_title', $prelegenci);
+                    }
+                    
                     $czas_start = get_post_meta($prezentacja->ID, 'czas_start', true);
                     $czas_zakonczenia = get_post_meta($prezentacja->ID, 'czas_zakonczenia', true);
                     
                     $sala = get_post_meta($prezentacja->ID, '_kongres_prezentacja_sala', true);
                     
                     $moderators = get_post_meta($prezentacja->ID, 'moderators', true);
-                    if (!empty($moderators)) {
+                    
+                    if (!is_array_empty($moderators) && $moderators !=='') {
                         $moderators_list = [];
                         foreach ($moderators as $moderator_id) {
                             $moderator = get_post($moderator_id);
@@ -148,11 +153,12 @@ function conference_schedule_shortcode() {
                         $tooltip_content .= sprintf('<br>Sala: %s', $sala);
                     }
                     
-                    if (!empty($moderators)) {
+                    if (is_array($moderators) && !is_array_empty($moderators)) {
+                        var_dump($moderators);
                         $tooltip_content .= sprintf('<br>Moderacja: %s', $moderators);
                     }
                     
-                    if (!empty($prelegenci_names)) {
+                    if (is_array($prelegenci_names) && !is_array_empty($prelegenci_names)) {
                         $tooltip_content .= sprintf('<br>Prelegenci: %s', implode(', ', $prelegenci_names));
                     }
                     
