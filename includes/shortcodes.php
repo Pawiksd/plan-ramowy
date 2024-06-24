@@ -38,26 +38,6 @@ function round_to_nearest_half_hour($time) {
 
 // Register the shortcode
 function conference_schedule_shortcode() {
-    global $timeslots1;
-
-    // Define time slots in one place
-    $timeslots1 = [];
-    $start = new DateTime('08:00');
-    $end = new DateTime('23:00');
-    $interval1 = new DateInterval('PT30M');
-    $period1 = new DatePeriod($start, $interval1, $end);
-
-    // Generate timeslots1 (30-minute intervals)
-    foreach ($period1 as $time) {
-        $next_time = clone $time;
-        $next_time->add($interval1);
-        $timeslots1[] = $time->format('H:i') . ' - ' . $next_time->format('H:i');
-    }
-
-    // Retrieve post data
-    $dni = get_posts(['post_type' => 'kongres_dzien', 'numberposts' => -1, 'orderby' => 'ID', 'order' => 'ASC']);
-    
-    $activePresentations = [];
     $output = '<div style="text-align: center;max-width:1200px;">';
     
     $upload_dir = wp_upload_dir();
@@ -66,7 +46,11 @@ function conference_schedule_shortcode() {
         $output .= '<a href="' . esc_url($pdf_url) . '" download="program-ramowy.pdf" class="button">Pobierz Program</a>';
     }
     
+    // Retrieve post data
+    $dni = get_posts(['post_type' => 'kongres_dzien', 'numberposts' => -1, 'orderby' => 'ID', 'order' => 'ASC']);
+    
     foreach ($dni as $dzien) {
+        $activePresentations = [];
         $output .= '<table class="conference-day-schedule">';
         // Retrieve scene order and settings for the day
         $scene_order = get_post_meta($dzien->ID, 'scene_order', true);
