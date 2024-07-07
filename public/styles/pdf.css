@@ -1,9 +1,4 @@
-
-Rozumiem, że problem występuje tylko podczas zapisu do PDF, więc możemy spróbować dostosować styl CSS, aby zoptymalizować wygląd tabeli w pliku PDF. Oto kilka sugerowanych zmian:
-
-css
-Copy code
-    /* Resetowanie marginesów i paddingu dla całej tabeli */
+/* Resetowanie marginesów i paddingu dla całej tabeli */
 table {
     margin: 0;
     padding: 0;
@@ -53,4 +48,54 @@ th {
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 100px; /* Dostosuj maksymalną szerokość według preferencji */
+}
+
+.css3-conference-day-schedule {
+    margin-bottom: 20px;
+}
+
+.css3-conference-schedule-header {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 10px;
+    background-color: #f1f1f1;
+    padding: 10px;
+    font-weight: bold;
+}
+
+.css3-conference-schedule-row {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 10px;
+}
+
+.css3-conference-schedule-time, .css3-conference-schedule-scene, .css3-conference-schedule-empty, .css3-conference-schedule-presentation {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+.css3-conference-schedule-time {
+    background-color: #f1f1f1;
+}
+
+.css3-conference-schedule-presentation {
+    background-color: #ffffff;
+    position: relative;
+}
+
+.css3-conference-schedule-presentation div {
+    border-radius: 10px;
+    border: 3px solid #ccc;
+    padding: 5px;
+}
+
+@media screen and (max-width: 600px) {
+    .css3-conference-schedule-header,
+    .css3-conference-schedule-row {
+        grid-template-columns: 1fr;
+    }
+
+    .css3-conference-schedule-time, .css3-conference-schedule-scene, .css3-conference-schedule-empty, .css3-conference-schedule-presentation {
+        grid-column: 1;
+    }
 }

@@ -41,21 +41,24 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 });
+/*
 
 document.addEventListener("DOMContentLoaded", function() {
-  var cells = document.querySelectorAll("td.wss-nb");
+  if (typeof InstallTrigger !== 'undefined') { // Check if the browser is Firefox
+    var cells = document.querySelectorAll("td.wss-nb");
 
-  cells.forEach(function(cell) {
-    var rowspan = cell.getAttribute("rowspan");
-    if (rowspan && rowspan > 1) {
-      var cellHeight = cell.clientHeight;
-      console.log(cell)
-      var childDiv = cell.querySelector("div");
+    cells.forEach(function(cell) {
+      var rowspan = cell.getAttribute("rowspan");
+      if (rowspan && rowspan > 1) {
+        var cellHeight = cell.offsetHeight;
+        var childDiv = cell.querySelector("div");
 
-      if (childDiv) {
-        childDiv.style.height = cellHeight + "px";
-        childDiv.style.position = "static"; // Ensure position is reset if previously set to absolute
+        if (childDiv) {
+          childDiv.style.height = cellHeight + "px";
+          childDiv.style.position = "static"; // Ensure position is reset if previously set to absolute
+        }
       }
-    }
-  });
+    });
+  }
 });
+*/

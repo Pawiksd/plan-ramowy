@@ -36,8 +36,7 @@
 
 @-moz-document url-prefix() {
     .conference-day-schedule td.wss-nb > div {
-        height: auto;
-        position: static; /* Resetowanie pozycji do domyślnej dla auto height */
+        display: table;
     }
 }
 
@@ -66,7 +65,11 @@
     padding: 4px;
 }
 .conference-day-schedule th.wss-nb, .conference-day-schedule td.wss-nb {background-color: transparent}
-.conference-day-schedule th a,.conference-day-schedule td a{text-decoration: none;}
+.conference-day-schedule th a,.conference-day-schedule td a{
+    text-decoration: none;
+    display: table-cell;
+    vertical-align: middle;
+}
 
 .custom-tooltip {
     position: absolute;
