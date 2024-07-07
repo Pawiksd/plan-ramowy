@@ -63,6 +63,7 @@
     background-color: #eeeeee;
     border-radius: 8px;
     padding: 4px;
+    text-align: -moz-center;
 }
 .conference-day-schedule th.wss-nb, .conference-day-schedule td.wss-nb {background-color: transparent}
 .conference-day-schedule th a,.conference-day-schedule td a{
@@ -83,6 +84,8 @@
     opacity: 0;
     transition: opacity 0.3s ease-in-out; /* Animacja przejścia */
     pointer-events: none;
+    max-width: 500px;
+    text-wrap: balance;
 }
 
 footer.wp-block-template-part{

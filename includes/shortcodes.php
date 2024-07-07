@@ -42,9 +42,7 @@ function conference_schedule_shortcode() {
     
     $upload_dir = wp_upload_dir();
     $pdf_url = $upload_dir['baseurl'] . '/program-ramowy.pdf';
-    if (file_exists($upload_dir['basedir'] . '/program-ramowy.pdf')) {
-        $output .= '<a href="' . esc_url($pdf_url) . '" download="program-ramowy.pdf" class="button">Pobierz Program</a>';
-    }
+
     
     // Retrieve post data
     $dni = get_posts(['post_type' => 'kongres_dzien', 'numberposts' => -1, 'orderby' => 'ID', 'order' => 'ASC']);
@@ -77,6 +75,13 @@ function conference_schedule_shortcode() {
         $timeslots1 = calculate_timeslots($presentations);
         
         $output .= '<thead>';
+        
+        if (file_exists($upload_dir['basedir'] . '/program-ramowy.pdf')) {
+            $output .= '<tr><th scope="col" class="wss-nb" colspan="' . (count($sceny) + 1) . '"><strong>';
+            $output .= '<a href="' . esc_url($pdf_url) . '" download="program-ramowy.pdf" class="button">Pobierz Program</a>';
+            $output .= '</strong></th></tr>';
+        }
+        
         $output .= '<tr><th scope="col" class="wss-nb" colspan="' . (count($sceny) + 1) . '"><strong>' . get_the_title($dzien->ID) . '</strong></th></tr>';
         $output .= '<tr><th scope="col" id="pr-godzina" class="wss-nb"></th>';
         foreach ($sceny as $scena) {
