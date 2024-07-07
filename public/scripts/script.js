@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-  const cells = document.querySelectorAll('.conference-day-schedule td[data-tooltip]');
+  const cells = document.querySelectorAll('.conference-day-schedule div[data-tooltip]');
 
   cells.forEach(cell => {
     cell.addEventListener('mouseenter', function() {

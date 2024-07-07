@@ -25,7 +25,6 @@
 .conference-day-schedule td{text-align: center;}
 
 .conference-day-schedule td > div {
-    height: 100%;
     width: 100%;
     display: flex;
     justify-content: center;
@@ -34,15 +33,14 @@
     box-sizing: border-box;
 }
 
+
 @-moz-document url-prefix() {
     .conference-day-schedule td.wss-nb > div {
-        display: table;
+        padding: 0px;
+        display: inline-table;
     }
 }
 
-.conference-day-schedule td[colspan] > div {
-    padding: 16px;
-}
 
 .conference-day-schedule th, .conference-day-schedule td {
     transition: all 0.3s ease;
@@ -50,7 +48,7 @@
     transform-origin: center center;
 }
 
-.conference-day-schedule td:hover, .conference-day-schedule th:hover {
+.conference-day-schedule td div:hover, .conference-day-schedule th:hover {
     transform-origin: center center;
     backface-visibility: hidden;
     transform: scale(1.05); /* Lekkie powiększenie elementów przy hover */
@@ -287,6 +285,9 @@ footer.wp-block-template-part{
     word-break: break-word;
 }
 
+.post-type-archive-prelegenci .wp-block-post-excerpt__excerpt{font-size: 22px;line-height: 1.4}
+.single-prelegenci .wp-block-post-featured-image img{width: 300px; height: 300px}
+.single-prelegenci .wp-block-post-featured-image {text-align: center;}
 
 /* Stylizacja dla urządzeń mobilnych */
 @media (max-width: 768px) {

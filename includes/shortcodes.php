@@ -1,22 +1,5 @@
 <?php
 
-// Function to round time to the nearest previous slot
-function round_to_previous_slot($time) {
-    $datetime = DateTime::createFromFormat('H:i', $time);
-    if ($datetime === false) {
-        return $time;
-    }
-
-    $minutes = (int) $datetime->format('i');
-    if ($minutes < 30) {
-        $datetime->setTime($datetime->format('H'), 0);
-    } else {
-        $datetime->setTime($datetime->format('H'), 30);
-    }
-
-    return $datetime->format('H:i');
-}
-
 // Function to round time to the nearest half hour
 function round_to_nearest_half_hour($time) {
     $datetime = DateTime::createFromFormat('H:i', $time);
@@ -36,6 +19,24 @@ function round_to_nearest_half_hour($time) {
     return $datetime->format('H:i');
 }
 
+// Function to round time to the nearest previous slot
+function round_to_previous_slot($time) {
+    $datetime = DateTime::createFromFormat('H:i', $time);
+    if ($datetime === false) {
+        return $time;
+    }
+    
+    $minutes = (int) $datetime->format('i');
+    if ($minutes < 30) {
+        $datetime->setTime($datetime->format('H'), 0);
+    } else {
+        $datetime->setTime($datetime->format('H'), 30);
+    }
+    
+    return $datetime->format('H:i');
+}
+
+
 // Register the shortcode
 function conference_schedule_shortcode() {
     $output = '<div style="text-align: center;max-width:1200px;">';
@@ -51,6 +52,7 @@ function conference_schedule_shortcode() {
     
     foreach ($dni as $dzien) {
         $activePresentations = [];
+        $occupiedColumns = [];
         $output .= '<table class="conference-day-schedule">';
         // Retrieve scene order and settings for the day
         $scene_order = get_post_meta($dzien->ID, 'scene_order', true);
@@ -94,6 +96,9 @@ function conference_schedule_shortcode() {
         $output .= '</tr></thead>';
         $output .= '<tbody>';
         
+        // Initialize occupiedColumns array
+        $occupiedColumns = array_fill(0, count($sceny), 0);
+        
         // Loop through each timeslot and scene to generate the presentation cells
         foreach ($timeslots1 as $timeslotIndex => $timeslot) {
             $output .= '<tr>';
@@ -101,6 +106,13 @@ function conference_schedule_shortcode() {
             
             $scena_index = 0; // index to track the scene position
             while ($scena_index < count($sceny)) {
+                // Skip occupied columns
+                if ($occupiedColumns[$scena_index] > 0) {
+                    $occupiedColumns[$scena_index]--;
+                    $scena_index++;
+                    continue;
+                }
+                
                 $scena = $sceny[$scena_index];
                 $scena_id = $scena->ID;
                 
@@ -117,7 +129,7 @@ function conference_schedule_shortcode() {
                     
                     foreach ($prezentacje as $prezentacja) {
                         // Check if the presentation has already been displayed
-                        if (in_array($prezentacja->ID, $activePresentations)) {
+                        if (in_array($prezentacja->ID, array_column($activePresentations[$scena_index] ?? [], 'id'))) {
                             continue;
                         }
                         
@@ -192,11 +204,23 @@ function conference_schedule_shortcode() {
                         $output .= '<a href="' . get_permalink($prezentacja->ID) . '" ' . $style2 . '>' . get_the_title($prezentacja->ID) . '</a>';
                         $output .= '</div>';
                         
-                        // Mark presentation as active
-                        $activePresentations[] = $prezentacja->ID;
+                        // Mark presentation as active with its remaining rowspan
+                        for ($i = 0; $i < $common_rowspan; $i++) {
+                            if (!isset($activePresentations[$scena_index + $i])) {
+                                $activePresentations[$scena_index + $i] = [];
+                            }
+                            $activePresentations[$scena_index + $i][$timeslotIndex + $i] = [
+                                'id' => $prezentacja->ID,
+                                'remaining_rowspan' => $common_rowspan - $i
+                            ];
+                        }
                     }
                     
                     $output .= '</td>';
+                    // Mark occupied columns
+                    for ($i = 0; $i < $colspan; $i++) {
+                        $occupiedColumns[$scena_index + $i] = $common_rowspan;
+                    }
                     $scena_index += $colspan; // increment the scene index by the colspan value to skip over the spanned columns
                 } else {
                     $output .= '<td></td>';

@@ -57,11 +57,10 @@ function plan_ramowy_settings_page_html() {
 
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'generate_pdf') {
         $pdf_path = generate_plan_ramowy_pdf();
-        echo '<div class="updated"><p>PDF generated successfully.</a></p></div>';
+        echo '<div class="updated"><p>PDF generated successfully.</p></div>';
     }
 
     ?>
-
     <form method="post" action="">
         <?php wp_nonce_field('plan_ramowy_update_images', 'plan_ramowy_images_nonce'); ?>
         
@@ -123,7 +122,6 @@ function plan_ramowy_settings_page_html() {
             <?php endif; ?>
         </div>
 
-
         <form method="post" id="generate_pdf_form" action="<?php echo admin_url('admin-ajax.php'); ?>" style="margin-right: 20px;">
             <h2>Generuj PDF</h2>
             <input type="hidden" name="action" value="generate_pdf">
@@ -132,8 +130,6 @@ function plan_ramowy_settings_page_html() {
                 <img src="<?php echo esc_url(admin_url('images/spinner.gif')); ?>" alt="Loading..."/>
             </div>
         </form>
-
-
     </div>
 
     <script>

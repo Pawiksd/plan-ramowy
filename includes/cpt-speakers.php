@@ -121,7 +121,7 @@ function modify_prelegenci_content($content) {
     
     return $content;
 }
-//add_filter('the_content', 'modify_prelegenci_content');
+add_filter('the_content', 'modify_prelegenci_content');
 
 function modify_prelegenci_archive_content($query) {
     if ($query->is_main_query() && !is_admin() && $query->is_post_type_archive('prelegenci')) {
