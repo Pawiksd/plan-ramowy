@@ -41,13 +41,15 @@ function conference_schedule_shortcode() {
     $output = '<div style="text-align: center;max-width:1200px;">';
     
     $upload_dir = wp_upload_dir();
-    $pdf_url = $upload_dir['baseurl'] . '/program.pdf';
-
+    $pdf_url = $upload_dir['baseurl'] . '/program-ramowy.pdf';
+    if (file_exists($upload_dir['basedir'] . '/program-ramowy.pdf')) {
+        $output .= '<a href="' . esc_url($pdf_url) . '" download="program-ramowy.pdf" class="button">Pobierz Program</a>';
+    }
     
     // Retrieve post data
     $dni = get_posts(['post_type' => 'kongres_dzien', 'numberposts' => -1, 'orderby' => 'ID', 'order' => 'ASC']);
     
-    foreach ($dni as $i => $dzien) {
+    foreach ($dni as $dzien) {
         $activePresentations = [];
         $output .= '<table class="conference-day-schedule">';
         // Retrieve scene order and settings for the day
@@ -75,14 +77,6 @@ function conference_schedule_shortcode() {
         $timeslots1 = calculate_timeslots($presentations);
         
         $output .= '<thead>';
-        
-        /*
-        if (file_exists($upload_dir['basedir'] . '/program-ramowy.pdf')) {
-            $output .= '<tr><th scope="col" class="wss-nb" colspan="' . (count($sceny) + 1) . '">';
-            $output .= '<div class="wp-block-button has-custom-width wp-block-button__width-50"><a class="wp-block-button__link wp-element-button" href="' . esc_url($pdf_url) . '" download="program.pdf" rel="noreferrer noopener"><strong>POBIERZ PDF Z PROGRAMEM</strong></a></div>';
-            $output .= '</th></tr>';
-        }*/
-        
         $output .= '<tr><th scope="col" class="wss-nb" colspan="' . (count($sceny) + 1) . '"><strong>' . get_the_title($dzien->ID) . '</strong></th></tr>';
         $output .= '<tr><th scope="col" id="pr-godzina" class="wss-nb"></th>';
         foreach ($sceny as $scena) {
@@ -105,88 +99,108 @@ function conference_schedule_shortcode() {
             $output .= '<tr>';
             $output .= '<th scope="row">' . $timeslot . '</th>';
             
-            foreach ($sceny as $scena) {
+            $scena_index = 0; // index to track the scene position
+            while ($scena_index < count($sceny)) {
+                $scena = $sceny[$scena_index];
                 $scena_id = $scena->ID;
                 
-                // Check for active presentations
-                if (!empty($activePresentations[$scena_id][$timeslotIndex])) {
-                    continue; // Skip if the presentation is active
-                }
-                
-                $prezentacja = znajdzPrezentacje($dzien->ID, $scena_id, $timeslot);
-                if ($prezentacja) {
-                    $colspan = obliczColspan($prezentacja);
-                    $rowspan = obliczRowspan($prezentacja);
-                    $bg_color = get_post_meta($prezentacja->ID, 'bg_color', true);
-                    $border_color = get_post_meta($prezentacja->ID, 'border_color', true);
-                    $text_color = get_post_meta($prezentacja->ID, 'text_color', true);
-                    $style = 'style="background-color:' . esc_attr($bg_color) . ';color:' . esc_attr($text_color) . '; border-radius: 10px; border: 3px solid ' . esc_attr($border_color) . ';"';
-                    $style2 = 'style="color:' . esc_attr($text_color) . ';"';
+                // Find all presentations in the current timeslot
+                $prezentacje = znajdzPrezentacje($dzien->ID, $scena_id, $timeslot);
+                if (!empty($prezentacje)) {
+                    usort($prezentacje, function($a, $b) {
+                        return strtotime(get_post_meta($a->ID, 'czas_start', true)) - strtotime(get_post_meta($b->ID, 'czas_start', true));
+                    });
                     
-                    $prelegenci = get_post_meta($prezentacja->ID, 'prelegenci', true) ?: [];
-                    $prelegenci_names = [];
-                    if(!is_array_empty($prelegenci)){
-                        $prelegenci_names = array_map('get_the_title', $prelegenci);
-                    }
+                    $common_rowspan = max(array_map('obliczRowspan', $prezentacje));
+                    $colspan = max(array_map('obliczColspan', $prezentacje));
+                    $output .= '<td scope="cell" class="wss-nb" rowspan="' . $common_rowspan . '" colspan="' . $colspan . '">';
                     
-                    $czas_start = get_post_meta($prezentacja->ID, 'czas_start', true);
-                    $czas_zakonczenia = get_post_meta($prezentacja->ID, 'czas_zakonczenia', true);
-                    
-                    $sala = get_post_meta($prezentacja->ID, '_kongres_prezentacja_sala', true);
-                    
-                    $moderators = get_post_meta($prezentacja->ID, 'moderators', true);
-                    
-                    if (!is_array_empty($moderators) && $moderators !=='') {
-                        $moderators_list = [];
-                        foreach ($moderators as $moderator_id) {
-                            $moderator = get_post($moderator_id);
-                            $moderators_list[] = esc_html($moderator->post_title);
+                    foreach ($prezentacje as $prezentacja) {
+                        // Check if the presentation has already been displayed
+                        if (in_array($prezentacja->ID, $activePresentations)) {
+                            continue;
                         }
-                        $moderators = implode(', ', $moderators_list);
-                    }
-                    $scene_name = get_post_meta($dzien->ID, 'scene_name_' . $scena->ID, true) ?: get_the_title($scena->ID);
-                    $tooltip_content = sprintf('Dzień: %s<br>Godzina: %s - %s',
-                        get_the_title($dzien->ID),
-                        $czas_start,
-                        $czas_zakonczenia
-                    );
-                    
-                    if (!empty($scene_name)) {
-                        $tooltip_content .= sprintf('<br>Scena: %s', $scene_name);
-                    }
-                    
-                    if (!empty($sala)) {
-                        $tooltip_content .= sprintf('<br>Sala: %s', $sala);
-                    }
-                    
-                    if (is_array($moderators) && !is_array_empty($moderators)) {
-                        var_dump($moderators);
-                        $tooltip_content .= sprintf('<br>Moderacja: %s', $moderators);
-                    }
-                    
-                    if (is_array($prelegenci_names) && !is_array_empty($prelegenci_names)) {
-                        $tooltip_content .= sprintf('<br>Prelegenci: %s', implode(', ', $prelegenci_names));
-                    }
-                    
-                    $summary = esc_html(get_the_excerpt($prezentacja->ID));
-                    if (!empty($summary)) {
-                        $tooltip_content .= sprintf('<br>Podsumowanie: %s', $summary);
-                    }
-                    
-                    $output .= '<td scope="cell" class="wss-nb" colspan="' . $colspan . '" rowspan="' . $rowspan . '" data-tooltip-url="' . get_permalink($prezentacja->ID) . '" data-tooltip="' . esc_attr($tooltip_content) . '">';
-                    
-                    $output .= '<div ' . $style . '>';
-                    $output .= '<a href="' . get_permalink($prezentacja->ID) . '" '.$style2.'>' . get_the_title($prezentacja->ID) . '</a>';
-                    $output .= '</div></td>';
-                    
-                    // Set active state for the presentation
-                    for ($i = $timeslotIndex; $i < $timeslotIndex + $rowspan; $i++) {
-                        for ($j = 0; $j < $colspan; $j++) {
-                            $activePresentations[$scena_id + $j][$i] = true;
+                        
+                        $presentation_colspan = obliczColspan($prezentacja);
+                        $rowspan = obliczRowspan($prezentacja);
+                        $bg_color = get_post_meta($prezentacja->ID, 'bg_color', true);
+                        $border_color = get_post_meta($prezentacja->ID, 'border_color', true);
+                        $text_color = get_post_meta($prezentacja->ID, 'text_color', true);
+                        
+                        
+                        $prelegenci = get_post_meta($prezentacja->ID, 'prelegenci', true) ?: [];
+                        $prelegenci_names = '';
+                        if (!is_array_empty($prelegenci)) {
+                            $prelegenci_names = array_map('get_the_title', $prelegenci);
                         }
+                        
+                        $czas_start = get_post_meta($prezentacja->ID, 'czas_start', true);
+                        $czas_zakonczenia = get_post_meta($prezentacja->ID, 'czas_zakonczenia', true);
+                        
+                        $sala = get_post_meta($prezentacja->ID, '_kongres_prezentacja_sala', true);
+                        $moderators = '';
+                        $moderators_tmp = get_post_meta($prezentacja->ID, 'moderators', true);
+                        
+                        if (!is_array_empty($moderators_tmp) && $moderators_tmp !== '') {
+                            $moderators_list = [];
+                            foreach ($moderators_tmp as $moderator_id) {
+                                $moderator = get_post($moderator_id);
+                                $moderators_list[] = esc_html($moderator->post_title);
+                            }
+                            $moderators = implode(', ', $moderators_list);
+                        }
+                        
+                        $scene_name = get_post_meta($dzien->ID, 'scene_name_' . $scena->ID, true) ?: get_the_title($scena->ID);
+                        $tooltip_content = sprintf('Dzień: %s<br>Godzina: %s - %s',
+                            get_the_title($dzien->ID),
+                            $czas_start,
+                            $czas_zakonczenia
+                        );
+                        
+                        if (!empty($scene_name)) {
+                            $tooltip_content .= sprintf('<br>Scena: %s', $scene_name);
+                        }
+                        
+                        if (!empty($sala)) {
+                            $tooltip_content .= sprintf('<br>Sala: %s', $sala);
+                        }
+                        
+                        if ($moderators !== '') {
+                            $tooltip_content .= sprintf('<br>Moderacja: %s', $moderators);
+                        }
+                        
+                        if ($prelegenci_names) {
+                            $tooltip_content .= sprintf('<br>Prelegenci: %s', implode(', ', $prelegenci_names));
+                        }
+                        
+                        $summary = esc_html(get_the_excerpt($prezentacja->ID));
+                        if (!empty($summary)) {
+                            $tooltip_content .= sprintf('<br>Podsumowanie: %s', $summary);
+                        }
+                        
+                        // Determine height of the div based on the duration
+                        $start_time = DateTime::createFromFormat('H:i', $czas_start);
+                        $end_time = DateTime::createFromFormat('H:i', $czas_zakonczenia);
+                        $interval = $start_time->diff($end_time);
+                        $minutes = $interval->h * 60 + $interval->i;
+                        $div_height = ($minutes / ($common_rowspan * 30)) * 100 . '%'; // Calculate height percentage based on the duration
+                        
+                        $style = 'style="background-color:' . esc_attr($bg_color) . ';color:' . esc_attr($text_color) . '; border-radius: 10px; border: 3px solid ' . esc_attr($border_color) . ';height:' . $div_height . ';"';
+                        $style2 = 'style="color:' . esc_attr($text_color) . ';"';
+                        
+                        $output .= '<div ' . $style . ' data-tooltip="' . esc_attr($tooltip_content) . '" >';
+                        $output .= '<a href="' . get_permalink($prezentacja->ID) . '" ' . $style2 . '>' . get_the_title($prezentacja->ID) . '</a>';
+                        $output .= '</div>';
+                        
+                        // Mark presentation as active
+                        $activePresentations[] = $prezentacja->ID;
                     }
+                    
+                    $output .= '</td>';
+                    $scena_index += $colspan; // increment the scene index by the colspan value to skip over the spanned columns
                 } else {
                     $output .= '<td></td>';
+                    $scena_index++; // increment the scene index by 1 to move to the next scene
                 }
             }
             $output .= '</tr>';
@@ -205,13 +219,13 @@ add_shortcode('conference_schedule', 'conference_schedule_shortcode');
 // Function to find a presentation
 function znajdzPrezentacje($dzienId, $scenaId, $timeslot) {
     list($start, $end) = explode(' - ', $timeslot);
-
+    
     // Convert start to DateTime object
     $start_time = DateTime::createFromFormat('H:i', $start);
     if ($start_time === false) {
-        return null;
+        return [];
     }
-
+    
     // Create 15 minutes later time
     $start_time_15min = clone $start_time;
     $start_time_15min->add(new DateInterval('PT15M'));
@@ -219,7 +233,7 @@ function znajdzPrezentacje($dzienId, $scenaId, $timeslot) {
     // Format times back to strings
     $start = $start_time->format('H:i');
     $start_15min = $start_time_15min->format('H:i');
-
+    
     // Find presentations that start at $start or $start_15min
     $prezentacje = get_posts([
         'post_type' => 'kongres_prezentacja',
@@ -235,14 +249,15 @@ function znajdzPrezentacje($dzienId, $scenaId, $timeslot) {
             ['key' => 'presentation_day_id', 'value' => $dzienId, 'compare' => '=']
         ]
     ]);
-
+    
     if (!empty($prezentacje)) {
-        $prezentacja = $prezentacje[0];
-        $prezentacja->tooltip_content = apply_filters('the_content', $prezentacja->post_content);
-        return $prezentacja;
+        foreach ($prezentacje as $prezentacja) {
+            $prezentacja->tooltip_content = apply_filters('the_content', $prezentacja->post_content);
+        }
+        return $prezentacje;
     }
-
-    return null;
+    
+    return [];
 }
 
 // Function to calculate the colspan for a presentation
@@ -288,7 +303,7 @@ function calculate_timeslots($presentations) {
     $end = DateTime::createFromFormat('H:i', $latest_end)->add(new DateInterval('PT30M'));
     $interval1 = new DateInterval('PT30M');
     $period1 = new DatePeriod($start, $interval1, $end);
-
+    
     // Generate timeslots1 (30-minute intervals)
     foreach ($period1 as $time) {
         $next_time = clone $time;
