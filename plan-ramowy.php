@@ -36,10 +36,12 @@ add_action('wp_enqueue_scripts', 'pr_enqueue_scripts');
 function pr_load_custom_wp_admin_script() {
     wp_enqueue_script('jquery-ui-sortable');
     wp_enqueue_style('wp-color-picker');
+    wp_enqueue_script('wp-color-picker');
+    
     wp_enqueue_media();
     wp_enqueue_style('select2-css', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css');
     wp_enqueue_script('select2-js', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.full.min.js', ['jquery'], null, true);
-    wp_enqueue_script('custom-admin-js', plugin_dir_url(__FILE__) . 'admin/scripts/admin.js', ['jquery', 'jquery-ui-sortable', 'select2-js'], false, true);
+    wp_enqueue_script('custom-admin-js', plugin_dir_url(__FILE__) . 'admin/scripts/admin.js', ['jquery', 'jquery-ui-sortable', 'select2-js',  'wp-color-picker'], false, true);
     wp_enqueue_style('custom-admin-css', plugin_dir_url(__FILE__) . 'admin/styles/admin.css', false, '1.0.0', 'all');
 }
 add_action('admin_enqueue_scripts', 'pr_load_custom_wp_admin_script');

@@ -41,13 +41,13 @@ function conference_schedule_shortcode() {
     $output = '<div style="text-align: center;max-width:1200px;">';
     
     $upload_dir = wp_upload_dir();
-    $pdf_url = $upload_dir['baseurl'] . '/program-ramowy.pdf';
+    $pdf_url = $upload_dir['baseurl'] . '/program.pdf';
 
     
     // Retrieve post data
     $dni = get_posts(['post_type' => 'kongres_dzien', 'numberposts' => -1, 'orderby' => 'ID', 'order' => 'ASC']);
     
-    foreach ($dni as $dzien) {
+    foreach ($dni as $i => $dzien) {
         $activePresentations = [];
         $output .= '<table class="conference-day-schedule">';
         // Retrieve scene order and settings for the day
@@ -76,11 +76,12 @@ function conference_schedule_shortcode() {
         
         $output .= '<thead>';
         
+        /*
         if (file_exists($upload_dir['basedir'] . '/program-ramowy.pdf')) {
-            $output .= '<tr><th scope="col" class="wss-nb" colspan="' . (count($sceny) + 1) . '"><strong>';
-            $output .= '<a href="' . esc_url($pdf_url) . '" download="program-ramowy.pdf" class="button">Pobierz Program</a>';
-            $output .= '</strong></th></tr>';
-        }
+            $output .= '<tr><th scope="col" class="wss-nb" colspan="' . (count($sceny) + 1) . '">';
+            $output .= '<div class="wp-block-button has-custom-width wp-block-button__width-50"><a class="wp-block-button__link wp-element-button" href="' . esc_url($pdf_url) . '" download="program.pdf" rel="noreferrer noopener"><strong>POBIERZ PDF Z PROGRAMEM</strong></a></div>';
+            $output .= '</th></tr>';
+        }*/
         
         $output .= '<tr><th scope="col" class="wss-nb" colspan="' . (count($sceny) + 1) . '"><strong>' . get_the_title($dzien->ID) . '</strong></th></tr>';
         $output .= '<tr><th scope="col" id="pr-godzina" class="wss-nb"></th>';

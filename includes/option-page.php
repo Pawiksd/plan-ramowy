@@ -3,8 +3,8 @@
 function plan_ramowy_settings_page()
 {
     add_menu_page(
-        'Program Ramowy Ustawienia',
-        'Program Ramowy',
+        'Program Ustawienia',
+        'Program ',
         'manage_options',
         'plan-ramowy-settings',
         'plan_ramowy_settings_page_html',
@@ -57,7 +57,7 @@ function plan_ramowy_settings_page_html() {
 
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'generate_pdf') {
         $pdf_path = generate_plan_ramowy_pdf();
-        echo '<div class="updated"><p>PDF generated successfully. <a href="' . esc_url($pdf_path) . '">Download PDF</a></p></div>';
+        echo '<div class="updated"><p>PDF generated successfully.</a></p></div>';
     }
 
     ?>
@@ -114,10 +114,10 @@ function plan_ramowy_settings_page_html() {
     <div style="display: flex; align-items: flex-start;">
         <?php
         $upload_dir = wp_upload_dir();
-        $pdf_url = $upload_dir['baseurl'] . '/program-ramowy.pdf';
+        $pdf_url = $upload_dir['baseurl'] . '/program.pdf';
         ?>
         <div id="pdf_preview" style="margin-right: 20px;">
-            <?php if (file_exists($upload_dir['basedir'] . '/program-ramowy.pdf')) : ?>
+            <?php if (file_exists($upload_dir['basedir'] . '/program.pdf')) : ?>
                 <h3>Ostatnio wygenerowany PDF</h3>
                 <embed src="<?php echo esc_url($pdf_url); ?>" type="application/pdf" width="800px" height="1200px"/>
             <?php endif; ?>
@@ -287,8 +287,8 @@ function plan_ramowy_settings_page_html() {
 function generate_pdf_request() {
     if (isset($_POST['action']) && $_POST['action'] === 'generate_pdf') {
         $url =  site_url().'/conference-schedule/';
-        $username = 'your_username'; // Zastąp rzeczywistą nazwą użytkownika
-        $password = 'your_password'; // Zastąp rzeczywistym hasłem
+        $username = 'your_username';
+        $password = 'your_password';
         $logo_url = esc_url(get_option('congress_logo_url'));
         $logo_position = sanitize_text_field(get_option('congress_logo_position'));
 
@@ -315,8 +315,8 @@ function generate_pdf_request() {
         
         if ($pdf_content) {
             $upload_dir = wp_upload_dir();
-            $pdf_path = $upload_dir['basedir'] . '/program-ramowy.pdf';
-            $pdf_url = $upload_dir['baseurl'] . '/program-ramowy.pdf';
+            $pdf_path = $upload_dir['basedir'] . '/program.pdf';
+            $pdf_url = $upload_dir['baseurl'] . '/program.pdf';
             
             // Save the PDF content to a file
             file_put_contents($pdf_path, $pdf_content);
