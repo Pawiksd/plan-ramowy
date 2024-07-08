@@ -36,15 +36,14 @@ function round_to_previous_slot($time) {
     return $datetime->format('H:i');
 }
 
-
 // Register the shortcode
 function conference_schedule_shortcode() {
     $output = '<div style="text-align: center;max-width:1200px;">';
     
     $upload_dir = wp_upload_dir();
-    $pdf_url = $upload_dir['baseurl'] . '/program-ramowy.pdf';
-    if (file_exists($upload_dir['basedir'] . '/program-ramowy.pdf')) {
-        $output .= '<a href="' . esc_url($pdf_url) . '" download="program-ramowy.pdf" class="button">Pobierz Program</a>';
+    $pdf_url = $upload_dir['baseurl'] . '/program.pdf';
+    if (file_exists($upload_dir['basedir'] . '/program.pdf')) {
+        $output .= '<a href="' . esc_url($pdf_url) . '" download="program.pdf" class="button">Pobierz Program</a>';
     }
     
     // Retrieve post data
@@ -209,17 +208,19 @@ function conference_schedule_shortcode() {
                             if (!isset($activePresentations[$scena_index + $i])) {
                                 $activePresentations[$scena_index + $i] = [];
                             }
-                            $activePresentations[$scena_index + $i][$timeslotIndex + $i] = [
-                                'id' => $prezentacja->ID,
-                                'remaining_rowspan' => $common_rowspan - $i
-                            ];
+                            if ($timeslotIndex + $i < count($timeslots1)) {
+                                $activePresentations[$scena_index + $i][$timeslotIndex + $i] = [
+                                    'id' => $prezentacja->ID,
+                                    'remaining_rowspan' => $common_rowspan - $i
+                                ];
+                            }
                         }
                     }
                     
                     $output .= '</td>';
                     // Mark occupied columns
                     for ($i = 0; $i < $colspan; $i++) {
-                        $occupiedColumns[$scena_index + $i] = $common_rowspan;
+                        $occupiedColumns[$scena_index + $i] = $common_rowspan - 1; // Subtract 1 to not occupy the next row
                     }
                     $scena_index += $colspan; // increment the scene index by the colspan value to skip over the spanned columns
                 } else {
