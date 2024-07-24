@@ -161,13 +161,15 @@ function conference_schedule_shortcode() {
                             $moderators = implode(', ', $moderators_list);
                         }
                         
-                        $scene_name = get_post_meta($dzien->ID, 'scene_name_' . $scena->ID, true) ?: get_the_title($scena->ID);
-                        $tooltip_content = sprintf('Dzień: %s<br>Godzina: %s - %s',
+                        $tooltip_content = sprintf('<a href="%s" target="_blank" class="display-mobile">Dowiedz się więcej o sesji</a><br>', get_permalink($prezentacja->ID) );
+                        
+                        $tooltip_content .= sprintf('Dzień: %s<br>Godzina: %s - %s',
                             get_the_title($dzien->ID),
                             $czas_start,
                             $czas_zakonczenia
                         );
                         
+                        $scene_name = get_post_meta($dzien->ID, 'scene_name_' . $scena->ID, true) ?: get_the_title($scena->ID);
                         if (!empty($scene_name)) {
                             $tooltip_content .= sprintf('<br>Scena: %s', $scene_name);
                         }

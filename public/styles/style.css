@@ -17,8 +17,13 @@
 .conference-day-schedule th, .conference-day-schedule td {
     padding: 0;
     text-align: center;
+    border: none;
+    vertical-align: middle;
+    line-height: 1.1;
+    font-weight: normal;
+    letter-spacing: 0;
 }
-.conference-day-schedule th{width: 10%}
+.conference-day-schedule th{width: 10%;font-size: 14px;}
 .conference-day-schedule th#pr-godzina{
     min-width: 95px;
 }
@@ -66,8 +71,13 @@
 .conference-day-schedule th.wss-nb, .conference-day-schedule td.wss-nb {background-color: transparent}
 .conference-day-schedule th a,.conference-day-schedule td a{
     text-decoration: none;
-    display: table-cell;
     vertical-align: middle;
+}
+
+@-moz-document url-prefix() {
+    .conference-day-schedule th a, .conference-day-schedule td a {
+        display: table-cell;
+    }
 }
 
 .custom-tooltip {
@@ -146,7 +156,7 @@ footer.wp-block-template-part{
     justify-content: center;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 20px 0;
     gap: 20px;
 }
 
@@ -337,5 +347,19 @@ footer.wp-block-template-part{
     }
 
     .conference-day-schedule td, .conference-day-schedule th {
+    }
+}
+
+/* Styl widoczny tylko na urządzeniach mobilnych */
+@media only screen and (max-width: 768px) {
+    .display-mobile {
+        display: block; /* lub inna wartość, która ma być użyta na mobilnych urządzeniach */
+    }
+}
+
+/* Styl ukrywający elementy na urządzeniach większych niż mobilne */
+@media only screen and (min-width: 769px) {
+    .display-mobile {
+        display: none;
     }
 }

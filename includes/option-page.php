@@ -307,6 +307,7 @@ function generate_pdf_request() {
             wp_send_json_error(array('message' => $response->get_error_message()));
         }
         
+        
         $pdf_content = wp_remote_retrieve_body($response);
         
         if ($pdf_content) {

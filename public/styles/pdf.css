@@ -99,3 +99,17 @@ th {
         grid-column: 1;
     }
 }
+
+/* Styl widoczny tylko na urządzeniach mobilnych */
+@media only screen and (max-width: 768px) {
+    .display-mobile {
+        display: block; /* lub inna wartość, która ma być użyta na mobilnych urządzeniach */
+    }
+}
+
+/* Styl ukrywający elementy na urządzeniach większych niż mobilne */
+@media only screen and (min-width: 769px) {
+    .display-mobile {
+        display: none;
+    }
+}
