@@ -90,9 +90,24 @@ function add_congress_presentation_meta_boxes()
         'normal',
         'high'
     );
+    
+    add_meta_box(
+        'congress_presentation_font_size',
+        'Wielkość czcionki',
+        'congress_presentation_font_size_meta_box_callback',
+        'kongres_prezentacja',
+        'side',
+        'default'
+    );
 }
 
 add_action('add_meta_boxes', 'add_congress_presentation_meta_boxes');
+
+function congress_presentation_font_size_meta_box_callback($post) {
+    $font_size = get_post_meta($post->ID, 'font_size', true);
+    echo '<label for="font_size">Rozmiar czcionki (px):</label>';
+    echo '<input type="number" id="font_size" name="font_size" value="' . esc_attr($font_size ? $font_size : 12) . '" min="1" max="100" />';
+}
 
 function save_congress_presentation_meta_data($post_id)
 {
@@ -161,6 +176,10 @@ function save_congress_presentation_meta_data($post_id)
         update_post_meta($post_id, 'moderators', $moderator_ids);
     } else {
         delete_post_meta($post_id, 'moderators');
+    }
+    
+    if (isset($_POST['font_size'])) {
+        update_post_meta($post_id, 'font_size', intval($_POST['font_size']));
     }
 }
 

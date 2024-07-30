@@ -12,7 +12,7 @@ get_header();
         display: none;
     }
     .conference-schedule-content {
-        max-width: 1200px;
+        max-width: 1600px;
         margin: 0 auto;
     }
 
@@ -34,7 +34,7 @@ get_header();
 $title_page_url = get_option('title_page_url');
 if ($title_page_url) {
     echo '<div class="title-page">';
-    echo '<img src="' . esc_url($title_page_url) . '" alt="Title Page" class="a4-page">';
+    echo '<img src="' . esc_url($title_page_url) . '" alt="Title Page" class="a4-page" style="min-width: 220mm;max-width: 130%; object-fit: cover;">';
     echo '</div>';
 }
 

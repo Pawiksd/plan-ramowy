@@ -137,6 +137,8 @@ function conference_schedule_shortcode() {
                         $bg_color = get_post_meta($prezentacja->ID, 'bg_color', true);
                         $border_color = get_post_meta($prezentacja->ID, 'border_color', true);
                         $text_color = get_post_meta($prezentacja->ID, 'text_color', true);
+                        $font_size = get_post_meta($prezentacja->ID, 'font_size', true) ?: '12';
+                        $font_size .='px';
                         
                         
                         $prelegenci = get_post_meta($prezentacja->ID, 'prelegenci', true) ?: [];
@@ -199,7 +201,7 @@ function conference_schedule_shortcode() {
                         $div_height = ($minutes / ($common_rowspan * 30)) * 100 . '%'; // Calculate height percentage based on the duration
                         
                         $style = 'style="background-color:' . esc_attr($bg_color) . ';color:' . esc_attr($text_color) . '; border-radius: 10px; border: 3px solid ' . esc_attr($border_color) . ';height:' . $div_height . ';"';
-                        $style2 = 'style="color:' . esc_attr($text_color) . ';"';
+                        $style2 = 'style="color:' . esc_attr($text_color) . '; font-size:' . esc_attr($font_size) . ';"';
                         
                         $output .= '<div ' . $style . ' data-tooltip="' . esc_attr($tooltip_content) . '" >';
                         $output .= '<a href="' . get_permalink($prezentacja->ID) . '" ' . $style2 . '>' . get_the_title($prezentacja->ID) . '</a>';

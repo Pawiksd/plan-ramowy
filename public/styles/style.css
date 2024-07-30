@@ -51,7 +51,9 @@
     transition: all 0.3s ease;
     height: 0;
     transform-origin: center center;
+
 }
+.conference-day-schedule td { background-color: transparent !important; }
 
 .conference-day-schedule td div:hover, .conference-day-schedule th:hover {
     transform-origin: center center;
@@ -68,7 +70,7 @@
     padding: 4px;
     text-align: -moz-center;
 }
-.conference-day-schedule th.wss-nb, .conference-day-schedule td.wss-nb {background-color: transparent}
+.conference-day-schedule th.wss-nb, .conference-day-schedule td.wss-nb {background-color: transparent !important;border: none !important;}
 .conference-day-schedule th a,.conference-day-schedule td a{
     text-decoration: none;
     vertical-align: middle;
