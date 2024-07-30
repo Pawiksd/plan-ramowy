@@ -69,6 +69,7 @@
     border-radius: 8px;
     padding: 4px;
     text-align: -moz-center;
+    height: 40px;
 }
 .conference-day-schedule th.wss-nb, .conference-day-schedule td.wss-nb {background-color: transparent !important;border: none !important;}
 .conference-day-schedule th a,.conference-day-schedule td a{
